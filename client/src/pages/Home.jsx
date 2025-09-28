@@ -1,11 +1,11 @@
 import React from 'react'
-
+import TimeCircle from '../components/TimerCircle';
 
 const Home = () => {
   return (
     <main className=''>
       <section>
-        {/* TimerCircle */}
+        <TimeCircle />
         {/* ModeSelector */}
       </section>
       <section>
