@@ -4,7 +4,7 @@ const Footer = () => {
   return (
     <footer>
       <div>
-        <span className='text-blue-700 font-poppins text-sm'>Made by Charles Alamares & inspired by blynker.com</span>
+        <span className='text-blue-700 font-poppins text-sm font-light'>Made by Charles Alamares & inspired by blynker.com</span>
       </div>
     </footer>
   )
