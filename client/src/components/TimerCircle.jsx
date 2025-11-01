@@ -4,7 +4,7 @@ import { LuEyeClosed } from "react-icons/lu";
 import { FiEye } from "react-icons/fi";
 import Button from '../components/Button';
 
-const TimerCircle = () => {
+const TimerCircle = ({timeLeft, setTimeLeft, WORKTIME}) => {
   // Buttons
   const handleStart = () => setIsRunning(true);
   const handlePause = () => setIsRunning(false);
@@ -12,27 +12,20 @@ const TimerCircle = () => {
     setIsRunning(false);
     setTimeLeft(WORKTIME);
   }
-  const btnItems = [
-    {text: "Start", onClick: handleStart}, 
-    {text: "Pause", onClick: handlePause},
-    {text: "Reset", onClick: handleReset}
-  ];
 
-  const WORKTIME = 25 * 60;
-  const EYEREMINDER = 20 * 60;
+  const EYEREMINDER = 5 * 60;
 
   
   // EYE REMINDER 20/20/20
   const [isEyeClosed, setIsEyeClosed ] = useState(false);
-
-  const [timeleft, setTimeLeft ] = useState(WORKTIME);
   const [isRunning, setIsRunning] = useState(false);
   const intervalRef = useRef(null);
 
-  const radius = 100;
+  const radius = 180;
   const circumference = 2 * Math.PI * radius;
-  const progress = (timeleft / WORKTIME) * circumference;  
+  const progress = (timeLeft / WORKTIME) * circumference;  
 
+  // TIME COUNTDOWN
   useEffect(() => {
     if(isRunning){
       intervalRef.current = setInterval(() => {
@@ -43,18 +36,25 @@ const TimerCircle = () => {
               setIsRunning(false)
               return WORKTIME;
             }
-            
+            // EYE WILL OPEN / CLOSE
             if(prev === EYEREMINDER){
               notify("Blink or step away from screen for 20 seconds!")
               setIsEyeClosed(true);
+
+              setTimeout(() => setIsEyeClosed(false), 20000)
             }
             return prev - 1;
           })
       },1000)
     }
       return () => clearInterval(intervalRef.current);
-  }, [isRunning]);
+  }, [isRunning, WORKTIME, setTimeLeft]);
 
+    // MODE
+  useEffect(()=>{
+    setIsRunning(false);
+    setTimeLeft(WORKTIME);
+  }, [WORKTIME,setTimeLeft]);
 
   const notify = (msg) => {
     if(Notification === 'granted') new Notification(msg);
@@ -69,20 +69,20 @@ const TimerCircle = () => {
   return (
     <div className='flex flex-col items-center justify-center'>
 
-      <div className=''>
+      <div className='gap-5'>
         <div className='relative flex items-center justify-center'>
-            <svg className='w-64 h-64 transform -rotate-90'>
+            <svg className='w-[400px] h-[400px] transform -rotate-90'>
             <circle
-            cx="128"
-            cy="128"
+            cx="200"
+            cy="200"
             r={radius}
             stroke='#e5e7eb'
             fill='transparent'
             strokeWidth="10"
             />
             <circle
-            cx="128"
-            cy="128"
+            cx="200"
+            cy="200"
             r={radius}
             stroke='#3B82F6'
             fill='transparent'
@@ -100,20 +100,34 @@ const TimerCircle = () => {
               <FiEye className=' text-blue-500 font-light' size={70} />
             )}
             <h1 className='text-5xl font-bold text-blue-500'>
-            {formatTime(timeleft)}
+            {formatTime(timeLeft)}
             </h1>
+
+            {/* Buttons */}
+            <div className='flex flex-col items-center justify-center mt-10'>
+              {/* Start Button */}
+              <Button
+                text={isRunning ? "Pause" : "Start"}
+                onClick={() => setIsRunning((prev) => !prev)
+                }
+              />
+
+              <button
+              href=""
+              className='hover:underline text-blue-700 py-2 px-5 font-light cursor-pointer' 
+              onClick={() => {
+                setIsRunning(false),
+                setTimeLeft(WORKTIME)
+              }}>
+                Reset
+              </button>
+            </div>
           </div>
         </div>
       </div>
       
       
-      {/* Buttons */}
-      <div className='flex space-x-3 mt-5'>
-        {/* Start Button */}
-        {btnItems.map((btnItem)=> {
-          return <Button key={btnItem} text={btnItem.text} onClick={btnItem.onClick} />
-        })}
-      </div>
+      
     </div>
   )
 }
