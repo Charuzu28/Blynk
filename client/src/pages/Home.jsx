@@ -20,7 +20,7 @@ const Home = () => {
     <main className='w-full mx-auto'>
       <section>
         <TimeCircle
-        key={mode}
+        mode={mode}
         timeLeft={timeLeft}
         setTimeLeft={setTimeLeft}
         WORKTIME={getDuration(mode)} />
