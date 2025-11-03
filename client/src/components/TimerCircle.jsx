@@ -4,22 +4,17 @@ import { LuEyeClosed } from "react-icons/lu";
 import { FiEye } from "react-icons/fi";
 import Button from '../components/Button';
 
-const TimerCircle = ({timeLeft, setTimeLeft, WORKTIME}) => {
-  // Buttons
-  const handleStart = () => setIsRunning(true);
-  const handlePause = () => setIsRunning(false);
-  const handleReset = () => {
-    setIsRunning(false);
-    setTimeLeft(WORKTIME);
-  }
+const TimerCircle = ({timeLeft, setTimeLeft, WORKTIME, mode}) => {
 
-  const EYEREMINDER = 5 * 60;
+
+  const EYEREMINDER = 20 * 60;
 
   
   // EYE REMINDER 20/20/20
   const [isEyeClosed, setIsEyeClosed ] = useState(false);
   const [isRunning, setIsRunning] = useState(false);
   const intervalRef = useRef(null);
+  const hasRemindedRef = useRef(false);
 
   const radius = 180;
   const circumference = 2 * Math.PI * radius;
@@ -37,24 +32,30 @@ const TimerCircle = ({timeLeft, setTimeLeft, WORKTIME}) => {
               return WORKTIME;
             }
             // EYE WILL OPEN / CLOSE
-            if(prev === EYEREMINDER){
-              notify("Blink or step away from screen for 20 seconds!")
-              setIsEyeClosed(true);
-
-              setTimeout(() => setIsEyeClosed(false), 20000)
+            if(mode === "pomadoro" && WORKTIME - prev >= EYEREMINDER && !hasRemindedRef.current){
+              
+              triggerEyeReminder();
+              hasRemindedRef.current = true;
             }
             return prev - 1;
           })
       },1000)
     }
       return () => clearInterval(intervalRef.current);
-  }, [isRunning, WORKTIME, setTimeLeft]);
+  }, [isRunning, WORKTIME, mode, setTimeLeft]);
 
     // MODE
   useEffect(()=>{
     setIsRunning(false);
     setTimeLeft(WORKTIME);
+    hasRemindedRef.current = false;
   }, [WORKTIME,setTimeLeft]);
+
+  const triggerEyeReminder = () => {
+    notify("👀 20–20–20 Rule: Look 20 feet away for 20 seconds!")
+    setIsEyeClosed(true);
+    setTimeout( () => setIsEyeClosed(false), 20000); //RE OPEN AFTER 20 SECONDS
+  }
 
   const notify = (msg) => {
     if(Notification === 'granted') new Notification(msg);
@@ -117,7 +118,8 @@ const TimerCircle = ({timeLeft, setTimeLeft, WORKTIME}) => {
               className='hover:underline text-blue-700 py-2 px-5 font-light cursor-pointer' 
               onClick={() => {
                 setIsRunning(false),
-                setTimeLeft(WORKTIME)
+                setTimeLeft(WORKTIME),
+                hasRemindedRef.current = false;
               }}>
                 Reset
               </button>
