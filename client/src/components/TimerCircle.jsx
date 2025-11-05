@@ -3,6 +3,7 @@ import { useState, useEffect, useRef } from 'react'
 import { LuEyeClosed } from "react-icons/lu";
 import { FiEye } from "react-icons/fi";
 import Button from '../components/Button';
+import alarmSound from '../assets/alarm/alarmRing.mp3'
 
 const TimerCircle = ({timeLeft, setTimeLeft, WORKTIME, mode}) => {
 
@@ -20,17 +21,30 @@ const TimerCircle = ({timeLeft, setTimeLeft, WORKTIME, mode}) => {
   const circumference = 2 * Math.PI * radius;
   const progress = (timeLeft / WORKTIME) * circumference;  
 
+  const ringSound = useRef(new Audio(alarmSound));
+
   // TIME COUNTDOWN
   useEffect(() => {
     if(isRunning){
       intervalRef.current = setInterval(() => {
           setTimeLeft((prev) => {
-            if(prev <= 5){
+            if(prev <= 1){
               clearInterval(intervalRef.current);
-              notify("⏱ Time’s up! Take a 5-min break.")
               setIsRunning(false)
+              
+              if(!hasRemindedRef.current){
+                hasRemindedRef.current = true;
+                
+                ringSound.current.currentTime = 0;
+                ringSound.current.play().catch(() => {});
+                notify("⏱ Time’s up! Take a 5-min break.");
+
+            }
               return WORKTIME;
             }
+            
+            
+
             // EYE WILL OPEN / CLOSE
             if(mode === "pomadoro" && WORKTIME - prev >= EYEREMINDER && !hasRemindedRef.current){
               
@@ -117,6 +131,8 @@ const TimerCircle = ({timeLeft, setTimeLeft, WORKTIME, mode}) => {
               href=""
               className='hover:underline text-blue-700 py-2 px-5 font-light cursor-pointer' 
               onClick={() => {
+                ringSound.current.pause();
+                ringSound.current.currentTime = 0;
                 setIsRunning(false),
                 setTimeLeft(WORKTIME),
                 hasRemindedRef.current = false;
