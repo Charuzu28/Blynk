@@ -3,10 +3,15 @@ import { useState, useEffect, useRef } from 'react'
 import { LuEyeClosed } from "react-icons/lu";
 import { FiEye } from "react-icons/fi";
 import Button from '../components/Button';
-import alarmSound from '../assets/alarm/alarmRing.mp3'
+import alarmSound from '../assets/alarm/alarmRing.mp3';
+import AlertModal from './AlertModal';
 
 const TimerCircle = ({timeLeft, setTimeLeft, WORKTIME, mode}) => {
-
+  const [modalConfig, setModalConfig] = useState({
+    open: false,
+    title: "",
+    message: "",
+  });
 
   const EYEREMINDER = 20 * 60;
 
@@ -30,21 +35,27 @@ const TimerCircle = ({timeLeft, setTimeLeft, WORKTIME, mode}) => {
           setTimeLeft((prev) => {
             if(prev <= 1){
               clearInterval(intervalRef.current);
+              intervalRef.current = null;
               setIsRunning(false)
               
               if(!hasRemindedRef.current){
                 hasRemindedRef.current = true;
-                
                 ringSound.current.currentTime = 0;
                 ringSound.current.play().catch(() => {});
-                notify("⏱ Time’s up! Take a 5-min break.");
 
-            }
+                if(mode === 'pomadoro'){
+                  showModal("Pomodoro Over","⏱ Time’s up! Take a 5-min break.");
+                }
+                if(mode === 'shortBreak'){
+                  showModal("Break Over","⏱ Time’s up! Your short break is done.");
+                }
+                if(mode === 'longBreak'){
+                  showModal("Long Break Over","⏱ Time’s up! Your long break is done.");
+                }
+
+              }
               return WORKTIME;
             }
-            
-            
-
             // EYE WILL OPEN / CLOSE
             if(mode === "pomadoro" && WORKTIME - prev >= EYEREMINDER && !hasRemindedRef.current){
               
@@ -56,6 +67,7 @@ const TimerCircle = ({timeLeft, setTimeLeft, WORKTIME, mode}) => {
       },1000)
     }
       return () => clearInterval(intervalRef.current);
+      intervalRef.current = null;
   }, [isRunning, WORKTIME, mode, setTimeLeft]);
 
     // MODE
@@ -65,8 +77,23 @@ const TimerCircle = ({timeLeft, setTimeLeft, WORKTIME, mode}) => {
     hasRemindedRef.current = false;
   }, [WORKTIME,setTimeLeft]);
 
+  const showModal = (title, message) => {
+    setModalConfig({
+      open: true,
+      title,
+      message,
+    });
+  };
+
+  const closeModal = () => {
+    ringSound.current.pause();
+    ringSound.current.currentTime = 0;
+    setModalConfig((prev) => ({ ...prev, open: false }));
+  };
+
   const triggerEyeReminder = () => {
-    notify("👀 20–20–20 Rule: Look 20 feet away for 20 seconds!")
+  
+    showModal("👀 20–20–20 Rule: Look 20 feet away for 20 seconds!")
     setIsEyeClosed(true);
     setTimeout( () => setIsEyeClosed(false), 20000); //RE OPEN AFTER 20 SECONDS
   }
@@ -128,9 +155,10 @@ const TimerCircle = ({timeLeft, setTimeLeft, WORKTIME, mode}) => {
               />
 
               <button
-              href=""
               className='hover:underline text-blue-700 py-2 px-5 font-light cursor-pointer' 
               onClick={() => {
+                clearInterval(intervalRef.current);
+                intervalRef.current = null;
                 ringSound.current.pause();
                 ringSound.current.currentTime = 0;
                 setIsRunning(false),
@@ -143,8 +171,19 @@ const TimerCircle = ({timeLeft, setTimeLeft, WORKTIME, mode}) => {
           </div>
         </div>
       </div>
-      
-      
+      {/* MODAL */}
+      <AlertModal
+        open={modalConfig.open}
+        onClose={closeModal}
+        title={modalConfig.title}
+        message={modalConfig.message}
+        onConfirm={() => {
+          clearInterval(intervalRef.current);
+          intervalRef.current = null;
+          setIsRunning(false);
+          hasRemindedRef.current = false;
+        }}
+      />
       
     </div>
   )
