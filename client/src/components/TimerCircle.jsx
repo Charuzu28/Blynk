@@ -7,26 +7,27 @@ import alarmSound from '../assets/alarm/alarmRing.mp3';
 import AlertModal from './AlertModal';
 
 const TimerCircle = ({timeLeft, setTimeLeft, WORKTIME, mode}) => {
+  // MODAL
   const [modalConfig, setModalConfig] = useState({
     open: false,
     title: "",
     message: "",
   });
 
-  const EYEREMINDER = 20 * 60;
-
-  
   // EYE REMINDER 20/20/20
+  const EYEREMINDER = 20 * 60;
   const [isEyeClosed, setIsEyeClosed ] = useState(false);
   const [isRunning, setIsRunning] = useState(false);
+  // REF
   const intervalRef = useRef(null);
-  const hasRemindedRef = useRef(false);
+  // const hasRemindedRef = useRef(false);
+  const eyeRemindedRef = useRef(false);
+  const sessionRemindedRef = useRef(false);
+  const ringSound = useRef(new Audio(alarmSound));
 
   const radius = 180;
   const circumference = 2 * Math.PI * radius;
   const progress = (timeLeft / WORKTIME) * circumference;  
-
-  const ringSound = useRef(new Audio(alarmSound));
 
   // TIME COUNTDOWN
   useEffect(() => {
@@ -38,8 +39,8 @@ const TimerCircle = ({timeLeft, setTimeLeft, WORKTIME, mode}) => {
               intervalRef.current = null;
               setIsRunning(false)
               
-              if(!hasRemindedRef.current){
-                hasRemindedRef.current = true;
+              if(!sessionRemindedRef.current){
+                sessionRemindedRef.current = true;
                 ringSound.current.currentTime = 0;
                 ringSound.current.play().catch(() => {});
 
@@ -57,10 +58,10 @@ const TimerCircle = ({timeLeft, setTimeLeft, WORKTIME, mode}) => {
               return WORKTIME;
             }
             // EYE WILL OPEN / CLOSE
-            if(mode === "pomadoro" && WORKTIME - prev >= EYEREMINDER && !hasRemindedRef.current){
+            if(mode === "pomadoro" && WORKTIME - prev >= EYEREMINDER && !eyeRemindedRef.current){
               
               triggerEyeReminder();
-              hasRemindedRef.current = true;
+              // eyeRemindedRef.current = true;
             }
             return prev - 1;
           })
@@ -74,7 +75,8 @@ const TimerCircle = ({timeLeft, setTimeLeft, WORKTIME, mode}) => {
   useEffect(()=>{
     setIsRunning(false);
     setTimeLeft(WORKTIME);
-    hasRemindedRef.current = false;
+    sessionRemindedRef.current = false;
+    eyeRemindedRef.current = false;
   }, [WORKTIME,setTimeLeft]);
 
   const showModal = (title, message) => {
@@ -90,9 +92,10 @@ const TimerCircle = ({timeLeft, setTimeLeft, WORKTIME, mode}) => {
     ringSound.current.currentTime = 0;
     setModalConfig((prev) => ({ ...prev, open: false }));
   };
-
-  const triggerEyeReminder = () => {
   
+  // Add ring / not?
+  const triggerEyeReminder = () => {
+    eyeRemindedRef.current = true;
     showModal("👀 20–20–20 Rule: Look 20 feet away for 20 seconds!")
     setIsEyeClosed(true);
     setTimeout( () => setIsEyeClosed(false), 20000); //RE OPEN AFTER 20 SECONDS
@@ -159,11 +162,14 @@ const TimerCircle = ({timeLeft, setTimeLeft, WORKTIME, mode}) => {
               onClick={() => {
                 clearInterval(intervalRef.current);
                 intervalRef.current = null;
+
                 ringSound.current.pause();
                 ringSound.current.currentTime = 0;
                 setIsRunning(false),
                 setTimeLeft(WORKTIME),
-                hasRemindedRef.current = false;
+
+                sessionRemindedRef.current = false;
+                eyeRemindedRef.current = false;
               }}>
                 Reset
               </button>
@@ -178,10 +184,13 @@ const TimerCircle = ({timeLeft, setTimeLeft, WORKTIME, mode}) => {
         title={modalConfig.title}
         message={modalConfig.message}
         onConfirm={() => {
-          clearInterval(intervalRef.current);
-          intervalRef.current = null;
-          setIsRunning(false);
-          hasRemindedRef.current = false;
+          // clearInterval(intervalRef.current);
+          // intervalRef.current = null;
+          // setIsRunning(false);
+          // hasRemindedRef.current = false;
+          ringSound.current.pause();
+          ringSound.current.currentTime = 0;
+          setModalConfig(prev => ({...prev, open: false}));
         }}
       />
       
