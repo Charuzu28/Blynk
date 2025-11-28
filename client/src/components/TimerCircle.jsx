@@ -5,8 +5,11 @@ import { FiEye } from "react-icons/fi";
 import Button from '../components/Button';
 import alarmSound from '../assets/alarm/alarmRing.mp3';
 import AlertModal from './AlertModal';
+import { useTheme } from '../context/ThemeContext';
 
 const TimerCircle = ({timeLeft, setTimeLeft, WORKTIME, mode}) => {
+  const { theme } = useTheme();
+
   // MODAL
   const [modalConfig, setModalConfig] = useState({
     open: false,
@@ -101,6 +104,7 @@ const TimerCircle = ({timeLeft, setTimeLeft, WORKTIME, mode}) => {
     setTimeout( () => setIsEyeClosed(false), 20000); //RE OPEN AFTER 20 SECONDS
   }
 
+  // disregard this
   const notify = (msg) => {
     if(Notification === 'granted') new Notification(msg);
     else alert(msg);
@@ -111,6 +115,14 @@ const TimerCircle = ({timeLeft, setTimeLeft, WORKTIME, mode}) => {
     const s = (seconds % 60).toString().padStart(2, "0");
     return `${m}:${s}`;
   }
+
+  const colorHex = {
+    blue: "#3B82F6",
+    red: "#EF4444",
+    green: "#22C55E",
+    purple: "#A855F7",
+  }[theme] || "#3B82F6";
+  
   return (
     <div className='flex flex-col items-center justify-center'>
 
@@ -129,7 +141,7 @@ const TimerCircle = ({timeLeft, setTimeLeft, WORKTIME, mode}) => {
             cx="200"
             cy="200"
             r={radius}
-            stroke='#3B82F6'
+            stroke={colorHex}
             fill='transparent'
             strokeWidth="10"
             strokeDasharray={circumference}
@@ -140,11 +152,11 @@ const TimerCircle = ({timeLeft, setTimeLeft, WORKTIME, mode}) => {
           {/* Header */}
           <div className='absolute flex flex-col items-center'>
             {isEyeClosed ? ( 
-              <LuEyeClosed className=' text-blue-500 font-light' size={70} />
+              <LuEyeClosed color={colorHex} size={70} />
             ) : (
-              <FiEye className=' text-blue-500 font-light' size={70} />
+              <FiEye color={colorHex} size={70} />
             )}
-            <h1 className='text-5xl font-bold text-blue-500'>
+            <h1 style={{ color: colorHex}} className='text-5xl font-bold'>
             {formatTime(timeLeft)}
             </h1>
 
