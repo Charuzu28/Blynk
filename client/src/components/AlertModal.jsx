@@ -1,7 +1,18 @@
 import React from "react";
 import { motion, AnimatePresence } from "framer-motion";
+import { useTheme } from "../context/ThemeContext";
 
 const Modal = ({ open, onClose, title, message, confirmText = "OK", onConfirm }) => {
+  const { theme } = useTheme();
+
+  if(!open) return null; 
+
+  const colorMap = {
+    blue: "bg-blue-600 hover:bg-blue-700",
+    red: "bg-red-600 hover:bg-red-700",
+    green: "bg-green-600 hover:bg-green-700",
+    purple: "bg-purple-600 hover:bg-purple-700",
+  }
   return (
     <AnimatePresence>
       {open && (
@@ -26,7 +37,7 @@ const Modal = ({ open, onClose, title, message, confirmText = "OK", onConfirm })
                   onConfirm?.();
                   onClose();
                 }}
-                className="bg-blue-500 hover:bg-blue-600 text-white font-medium px-5 py-2 rounded-lg"
+                className={` text-white font-medium px-5 py-2 rounded-lg ${colorMap[theme] || colorMap.blue}`}
               >
                 {confirmText}
               </button>
