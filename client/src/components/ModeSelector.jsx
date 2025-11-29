@@ -2,7 +2,7 @@ import React from 'react'
 import { useTheme } from '../context/ThemeContext';
 
 const MODES =[
-        {key: "pomadoro", label: "Pomadoro"},
+        {key: "pomodoro", label: "Pomodoro"},
         {key: "shortBreak", label: "Short-Break"},
         {key: "longBreak", label: "Long-Break"}
     ];
