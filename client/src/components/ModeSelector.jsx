@@ -19,7 +19,7 @@ const ModeSelector = ({mode, setMode, setTimeLeft, DURATION}) => {
   }[theme] || "#3B82F6";
 
   return (
-    <div className='flex space-x-3 justify-center'>
+    <div className='flex flex-wrap justify-center gap-3 mt-6 px-4'>
         {MODES.map((m) => {
          const isActive = mode === m.key;
 
