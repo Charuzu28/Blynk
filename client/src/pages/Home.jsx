@@ -17,7 +17,7 @@ const Home = () => {
 
   const getDuration = (key) => DURATION[key] || DURATION.pomadoro;
   return (
-    <main className='w-full mx-auto'>
+    <main className='w-full mx-auto px-4 pt-6 pb-24'>
       <section>
         <TimeCircle
         mode={mode}

@@ -128,27 +128,27 @@ const TimerCircle = ({timeLeft, setTimeLeft, WORKTIME, mode}) => {
 
       <div className='gap-5'>
         <div className='relative flex items-center justify-center'>
-            <svg className='w-[400px] h-[400px] transform -rotate-90'>
-            <circle
-            cx="200"
-            cy="200"
-            r={radius}
-            stroke='#e5e7eb'
-            fill='transparent'
-            strokeWidth="10"
-            />
-            <circle
-            cx="200"
-            cy="200"
-            r={radius}
-            stroke={colorHex}
-            fill='transparent'
-            strokeWidth="10"
-            strokeDasharray={circumference}
-            strokeDashoffset={circumference - progress}
-            strokeLinecap='round'
-            />
-          </svg>
+            <svg
+    viewBox="0 0 400 400"
+    preserveAspectRatio="xMidYMid meet"
+    className="w-[250px] h-[250px] sm:w-[300px] sm:h-[300px] md:w-[350px] md:h-[350px] lg:w-[400px] lg:h-[400px] transform -rotate-90"
+    aria-hidden="true"
+  >
+    <circle cx="200" cy="200" r={radius} stroke="#e5e7eb" fill="transparent" strokeWidth="12" />
+    <circle
+      cx="200"
+      cy="200"
+      r={radius}
+      stroke={colorHex}
+      fill="transparent"
+      strokeWidth="12"
+      strokeDasharray={circumference}
+      strokeDashoffset={circumference - progress}
+      strokeLinecap="round"
+      style={{ transition: "stroke-dashoffset 300ms linear" }}
+    />
+  </svg>
+
           {/* Header */}
           <div className='absolute flex flex-col items-center'>
             {isEyeClosed ? ( 
@@ -156,12 +156,12 @@ const TimerCircle = ({timeLeft, setTimeLeft, WORKTIME, mode}) => {
             ) : (
               <FiEye color={colorHex} size={70} />
             )}
-            <h1 style={{ color: colorHex}} className='text-5xl font-bold'>
+            <h1 style={{ color: colorHex}} className="text-4xl sm:text-5xl md:text-6xl font-bold">
             {formatTime(timeLeft)}
             </h1>
 
             {/* Buttons */}
-            <div className='flex flex-col items-center justify-center mt-10'>
+            <div className='flex flex-col items-center justify-center mt-6 w-full max-w-xs mx-auto gap-3'>
               {/* Start Button */}
               <Button
                 text={isRunning ? "Pause" : "Start"}
