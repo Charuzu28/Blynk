@@ -4,7 +4,7 @@ import ModeSelector from '../components/ModeSelector';
 import { useState } from 'react';
 
 const DURATION = {
-  pomadoro: 25 * 60,
+  pomodoro: 25 * 60,
   shortBreak: 5 * 60,
   longBreak: 10 * 60,
 
@@ -12,10 +12,10 @@ const DURATION = {
 
 const Home = () => {
 
-  const [mode, setMode] = useState('pomadoro');
-  const [timeLeft, setTimeLeft] = useState(DURATION.pomadoro);
+  const [mode, setMode] = useState('pomodoro');
+  const [timeLeft, setTimeLeft] = useState(DURATION.pomodoro);
 
-  const getDuration = (key) => DURATION[key] || DURATION.pomadoro;
+  const getDuration = (key) => DURATION[key] || DURATION.pomodoro;
   return (
     <main className='w-full mx-auto px-4 pt-6 pb-24'>
       <section>
