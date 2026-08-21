@@ -1,44 +1,134 @@
-import React from 'react'
-import TimeCircle from '../components/TimerCircle';
-import ModeSelector from '../components/ModeSelector';
-import { useState } from 'react';
+import { FiSettings } from "react-icons/fi";
+import { Link } from "react-router-dom";
 
-const DURATION = {
-  pomodoro: 25 * 60,
-  shortBreak: 5 * 60,
-  longBreak: 10 * 60,
-
-}
+import TimerCard from "../features/timer/components/TimerCard";
+import useTasks
+  from "../features/tasks/hooks/useTasks";
+import TasksWidget
+  from "../features/tasks/components/TaskWidget";
+import useNotes
+  from "../features/notes/hooks/useNotes";
+import NotesWidget
+  from "../features/notes/components/NotesWidget";
+import useFocusSessions
+  from "../features/focuSessions/hooks/useFocusSessions";
+import FocusStreakCard
+  from "../features/streak/components/FocusStreakCard";
 
 const Home = () => {
+  const {
+  tasks,
+  selectedTask,
+  selectedTaskId,
 
-  const [mode, setMode] = useState('pomodoro');
-  const [timeLeft, setTimeLeft] = useState(DURATION.pomodoro);
+  addTask,
+  toggleTask,
+  updateTaskTitle,
+  deleteTask,
+  selectTask,
+  incrementTaskPomodoro,
+} = useTasks();
 
-  const getDuration = (key) => DURATION[key] || DURATION.pomodoro;
+const {
+  notes,
+  addNote,
+  updateNote,
+  deleteNote,
+} = useNotes();
+
+const {
+  sessions,
+  recordFocusSession,
+} = useFocusSessions();
+
+const handleFocusComplete = ({
+  task,
+  duration,
+}) => {
+  recordFocusSession({
+    taskId: task?.id ?? null,
+    taskTitle: task?.title ?? null,
+    duration,
+  });
+
+  if (task?.id) {
+    incrementTaskPomodoro(task.id);
+  }
+};
+
   return (
-    <main className='w-full mx-auto px-4 pt-6 pb-24'>
-      <section>
-        <TimeCircle
-        mode={mode}
-        timeLeft={timeLeft}
-        setTimeLeft={setTimeLeft}
-        WORKTIME={getDuration(mode)} />
-        <ModeSelector
-        mode={mode}
-        setMode={setMode}
-        setTimeLeft={setTimeLeft}
-        DURATION={getDuration}
-         />
-      </section>
-      <section>
-        {/* TaskList */}
-      </section>
-      <section>
-        {/* Task Item */}
-      </section>
-    </main>
-  )
-}
+    <main className="min-h-screen bg-[#F8FAFC] px-4 py-7 pb-28 sm:px-6 lg:px-8">
+      <div className="mx-auto max-w-[1440px]">
+        {/* Header */}
+        <header className="mb-8 flex items-center justify-between">
+          <Link
+            to="/"
+            className="text-3xl font-regular tracking-tight text-blue-500"
+          >
+            blynk
+          </Link>
 
-export default Home
+          <Link
+            to="/settings"
+            aria-label="Settings"
+            className="
+              flex h-11 w-11
+              items-center justify-center
+              rounded-full border border-slate-200
+              bg-white text-slate-500
+              transition
+              hover:bg-slate-50
+            "
+          >
+            <FiSettings size={20} />
+          </Link>
+        </header>
+
+        {/* Dashboard */}
+        <div
+          className="
+            grid gap-5
+            lg:grid-cols-[1.3fr_1fr]
+          "
+        >
+          {/* LEFT SIDE */}
+          <div className="grid gap-5">
+            {/* Feature 6: Streak */}
+            <FocusStreakCard
+              sessions={sessions}
+            />
+
+            <div className="grid gap-5 sm:grid-cols-2">
+              {/* Feature 4: Notes */}
+              <NotesWidget
+                notes={notes}
+                onAddNote={addNote}
+                onUpdateNote={updateNote}
+                onDeleteNote={deleteNote}
+              />
+
+              {/* Feature 3: Tasks */}
+              <TasksWidget
+                tasks={tasks}
+                selectedTaskId={selectedTaskId}
+                onAddTask={addTask}
+                onToggleTask={toggleTask}
+                onSelectTask={selectTask}
+                onEditTask={updateTaskTitle}
+                onDeleteTask={deleteTask}
+              />
+            </div>
+          </div>
+
+          {/* FEATURE 1: POMODORO */}
+          <TimerCard
+            selectedTask={selectedTask}
+            onFocusComplete={handleFocusComplete}
+          />
+        </div>
+      </div>
+    </main>
+  );
+};
+
+export default Home;

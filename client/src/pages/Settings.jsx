@@ -1,86 +1,635 @@
-// src/pages/Settings.jsx
-import React from "react";
-import { useTheme } from "../context/ThemeContext";
+import {
+  useEffect,
+  useState,
+} from "react";
 
-const COLORS = [
-  { name: "Blue", value: "blue", hex: "#3B82F6" },
-  { name: "Red", value: "red", hex: "#EF4444" },
-  { name: "Green", value: "green", hex: "#22C55E" },
-  { name: "Purple", value: "purple", hex: "#A855F7" },
-];
+import { Link } from "react-router-dom";
+
+import {
+  FiArrowLeft,
+  FiBell,
+  FiClock,
+  FiEye,
+  FiRefreshCcw,
+  FiSave,
+  FiVolume2,
+} from "react-icons/fi";
+
+import { useSettings } from "../features/settings/context/SettingContext";
+
+const NumberSetting = ({
+  label,
+  description,
+  value,
+  min,
+  max,
+  suffix,
+  onChange,
+}) => {
+  return (
+    <div
+      className="
+        flex flex-col gap-4
+        border-b border-slate-100
+        py-5
+        sm:flex-row
+        sm:items-center
+        sm:justify-between
+      "
+    >
+      <div>
+        <p
+          className="
+            text-sm font-medium
+            text-slate-700
+          "
+        >
+          {label}
+        </p>
+
+        <p
+          className="
+            mt-1 text-xs
+            text-slate-400
+          "
+        >
+          {description}
+        </p>
+      </div>
+
+      <div
+        className="
+          flex items-center gap-2
+        "
+      >
+        <input
+          type="number"
+          min={min}
+          max={max}
+          value={value}
+          onChange={(event) =>
+            onChange(
+              Number(
+                event.target.value
+              )
+            )
+          }
+          className="
+            w-20 rounded-xl
+            border border-slate-200
+            bg-white px-3 py-2
+            text-center
+            text-sm text-slate-700
+            outline-none
+            transition
+            focus:border-blue-300
+            focus:ring-2
+            focus:ring-blue-50
+          "
+        />
+
+        <span
+          className="
+            min-w-[45px]
+            text-xs text-slate-400
+          "
+        >
+          {suffix}
+        </span>
+      </div>
+    </div>
+  );
+};
+
+const ToggleSetting = ({
+  label,
+  description,
+  enabled,
+  onChange,
+}) => {
+  return (
+    <div
+      className="
+        flex items-center
+        justify-between
+        gap-6
+        border-b
+        border-slate-100
+        py-5
+      "
+    >
+      <div>
+        <p className="text-sm font-medium text-slate-700">
+          {label}
+        </p>
+
+        <p
+          className="
+            mt-1 text-xs
+            leading-5
+            text-slate-400
+          "
+        >
+          {description}
+        </p>
+      </div>
+
+      <button
+        type="button"
+        role="switch"
+        aria-checked={enabled}
+        aria-label={label}
+        onClick={() => onChange(!enabled)}
+        className={`
+          relative
+          h-7 w-12
+          shrink-0
+          cursor-pointer
+          rounded-full
+          p-0
+          transition-colors
+          duration-200
+          focus:outline-none
+          focus:ring-2
+          focus:ring-blue-200
+          focus:ring-offset-2
+
+          ${enabled ? "bg-blue-500" : "bg-slate-300"}
+        `}
+      >
+        <span
+          aria-hidden="true"
+          className={`
+            absolute
+            left-1
+            top-1
+            h-5 w-5
+            rounded-full
+            bg-white
+            shadow-sm
+            transition-transform
+            duration-200
+            ease-in-out
+
+            ${enabled ? "translate-x-5" : "translate-x-0"}
+          `}
+        />
+      </button>
+    </div>
+  );
+};
+
+const SettingsSection = ({
+  icon: Icon,
+  title,
+  description,
+  children,
+}) => {
+  return (
+    <section
+      className="
+        rounded-[28px]
+        border border-slate-100
+        bg-white
+        p-5
+        shadow-[0_10px_40px_rgba(15,23,42,0.05)]
+        sm:p-7
+      "
+    >
+      <div
+        className="
+          flex items-start gap-3
+        "
+      >
+        <div
+          className="
+            flex h-10 w-10
+            shrink-0
+            items-center
+            justify-center
+            rounded-xl
+            bg-blue-50
+            text-blue-500
+          "
+        >
+          <Icon size={19} />
+        </div>
+
+        <div>
+          <h2
+            className="
+              text-lg font-medium
+              text-slate-800
+            "
+          >
+            {title}
+          </h2>
+
+          <p
+            className="
+              mt-1 text-xs
+              leading-5
+              text-slate-400
+            "
+          >
+            {description}
+          </p>
+        </div>
+      </div>
+
+      <div className="mt-4">
+        {children}
+      </div>
+    </section>
+  );
+};
 
 const Settings = () => {
-  const { theme, setTheme, darkMode, setDarkMode } = useTheme();
+  const {
+    settings,
+    saveSettings,
+    resetSettings,
+  } = useSettings();
+
+  const [form, setForm] =
+    useState(settings);
+
+  const [saved, setSaved] =
+    useState(false);
+
+  useEffect(() => {
+    setForm(settings);
+  }, [settings]);
+
+  const updateField = (
+    field,
+    value
+  ) => {
+    setSaved(false);
+
+    setForm(
+      (currentForm) => ({
+        ...currentForm,
+        [field]: value,
+      })
+    );
+  };
+
+  const handleSubmit = (
+    event
+  ) => {
+    event.preventDefault();
+
+    const sanitized = {
+      ...form,
+
+      pomodoroMinutes:
+        Math.min(
+          120,
+          Math.max(
+            1,
+            form.pomodoroMinutes
+          )
+        ),
+
+      shortBreakMinutes:
+        Math.min(
+          30,
+          Math.max(
+            1,
+            form.shortBreakMinutes
+          )
+        ),
+
+      longBreakMinutes:
+        Math.min(
+          60,
+          Math.max(
+            1,
+            form.longBreakMinutes
+          )
+        ),
+
+      eyeReminderMinutes:
+        Math.min(
+          60,
+          Math.max(
+            1,
+            form.eyeReminderMinutes
+          )
+        ),
+
+      eyeBreakSeconds:
+        Math.min(
+          120,
+          Math.max(
+            5,
+            form.eyeBreakSeconds
+          )
+        ),
+    };
+
+    saveSettings(sanitized);
+
+    setForm(sanitized);
+    setSaved(true);
+  };
+
+  const handleReset = () => {
+    resetSettings();
+    setSaved(false);
+  };
 
   return (
     <main
-      className={`max-w-xl mx-auto p-6 transition ${
-        darkMode ? "text-white" : "text-black"
-      }`}
+      className="
+        min-h-screen
+        bg-[#F8FAFC]
+        px-4 py-7
+        pb-32
+        sm:px-6
+        lg:px-8
+      "
     >
-        <br />
-      <h1 className="text-blue-500 text-3xl font-semibold mb-6">Settings</h1>
-
-      {/* THEME COLOR */}
-      <div className="mb-8">
-        <p className="text-blue-500 text-lg font-medium mb-3">Theme Color</p>
-
-        <div
-          className={`grid grid-cols-4 gap-4 ${
-            darkMode ? "opacity-40 pointer-events-none" : ""
-          }`}
+      <div
+        className="
+          mx-auto max-w-4xl
+        "
+      >
+        <header
+          className="
+            mb-8
+            flex items-center
+            justify-between
+          "
         >
-          {COLORS.map((c) => (
-            <button
-              key={c.value}
-              onClick={() => setTheme(c.value)}
-              title={c.name}
-              className={`w-full h-12 rounded-lg flex items-center justify-center border-2 transition-transform transform ${
-                theme === c.value
-                  ? "scale-105 border-black dark:border-white"
-                  : "border-gray-200"
-              }`}
-              style={{ backgroundColor: c.hex }}
+          <div
+            className="
+              flex items-center
+              gap-4
+            "
+          >
+            <Link
+              to="/"
+              aria-label="Back home"
+              className="
+                flex h-10 w-10
+                items-center
+                justify-center
+                rounded-full
+                border border-slate-200
+                bg-white
+                text-slate-500
+                transition
+                hover:bg-slate-50
+              "
             >
-              {theme === c.value ? (
-                <span className="text-white font-semibold">✓</span>
-              ) : null}
+              <FiArrowLeft
+                size={18}
+              />
+            </Link>
+
+            <div>
+              <h1
+                className="
+                  text-2xl
+                  font-semibold
+                  tracking-tight
+                  text-slate-800
+                "
+              >
+                Settings
+              </h1>
+
+              <p
+                className="
+                  mt-1 text-sm
+                  text-slate-400
+                "
+              >
+                Customize your
+                focus experience.
+              </p>
+            </div>
+          </div>
+        </header>
+
+        <form
+          onSubmit={handleSubmit}
+          className="space-y-5"
+        >
+          <SettingsSection
+            icon={FiClock}
+            title="Timer"
+            description="Choose how long each focus and break session lasts."
+          >
+            <NumberSetting
+              label="Pomodoro"
+              description="Length of a focus session."
+              value={
+                form.pomodoroMinutes
+              }
+              min={1}
+              max={120}
+              suffix="min"
+              onChange={(value) =>
+                updateField(
+                  "pomodoroMinutes",
+                  value
+                )
+              }
+            />
+
+            <NumberSetting
+              label="Short Break"
+              description="A quick break between focus sessions."
+              value={
+                form.shortBreakMinutes
+              }
+              min={1}
+              max={30}
+              suffix="min"
+              onChange={(value) =>
+                updateField(
+                  "shortBreakMinutes",
+                  value
+                )
+              }
+            />
+
+            <NumberSetting
+              label="Long Break"
+              description="A longer recovery period."
+              value={
+                form.longBreakMinutes
+              }
+              min={1}
+              max={60}
+              suffix="min"
+              onChange={(value) =>
+                updateField(
+                  "longBreakMinutes",
+                  value
+                )
+              }
+            />
+          </SettingsSection>
+
+          <SettingsSection
+            icon={FiEye}
+            title="Eye Care"
+            description="Manage BLYNK'N's 20-20-20 eye-rest reminders."
+          >
+            <ToggleSetting
+              label="Eye-care reminders"
+              description="Remind me to look away from the screen during long focus sessions."
+              enabled={
+                form.eyeCareEnabled
+              }
+              onChange={(value) =>
+                updateField(
+                  "eyeCareEnabled",
+                  value
+                )
+              }
+            />
+
+            {form.eyeCareEnabled && (
+              <>
+                <NumberSetting
+                  label="Reminder interval"
+                  description="How often BLYNK'N reminds you to rest your eyes."
+                  value={
+                    form.eyeReminderMinutes
+                  }
+                  min={1}
+                  max={60}
+                  suffix="min"
+                  onChange={(value) =>
+                    updateField(
+                      "eyeReminderMinutes",
+                      value
+                    )
+                  }
+                />
+
+                <NumberSetting
+                  label="Eye break"
+                  description="How long each eye-rest countdown lasts."
+                  value={
+                    form.eyeBreakSeconds
+                  }
+                  min={5}
+                  max={120}
+                  suffix="sec"
+                  onChange={(value) =>
+                    updateField(
+                      "eyeBreakSeconds",
+                      value
+                    )
+                  }
+                />
+              </>
+            )}
+          </SettingsSection>
+
+          <SettingsSection
+            icon={FiVolume2}
+            title="Sounds"
+            description="Control audio feedback when sessions end."
+          >
+            <ToggleSetting
+              label="Timer alarm"
+              description="Play a sound when a Pomodoro or break finishes."
+              enabled={
+                form.soundEnabled
+              }
+              onChange={(value) =>
+                updateField(
+                  "soundEnabled",
+                  value
+                )
+              }
+            />
+          </SettingsSection>
+
+          <div
+            className="
+              flex flex-col
+              gap-3
+              sm:flex-row
+              sm:items-center
+              sm:justify-between
+            "
+          >
+            <button
+              type="button"
+              onClick={
+                handleReset
+              }
+              className="
+                flex cursor-pointer
+                items-center
+                justify-center
+                gap-2
+                rounded-xl
+                border
+                border-slate-200
+                bg-white
+                px-5 py-3
+                text-sm
+                font-medium
+                text-slate-500
+                transition
+                hover:bg-slate-50
+              "
+            >
+              <FiRefreshCcw />
+
+              Reset defaults
             </button>
-          ))}
-        </div>
 
-        {darkMode && (
-          <p className="mt-2 text-sm opacity-70">Disabled while Dark Mode is ON</p>
-        )}
-      </div>
+            <div
+              className="
+                flex items-center
+                justify-end gap-4
+              "
+            >
+              {saved && (
+                <span
+                  className="
+                    text-sm
+                    text-emerald-600
+                  "
+                >
+                  Settings saved
+                </span>
+              )}
 
-      {/* DARK MODE **FUTURE DEVELOPMENT** */}
-      {/* <div className="flex items-center justify-between mb-8">
-        <p className="text-blue-500 text-lg font-medium">Dark Mode</p>
+              <button
+                type="submit"
+                className="
+                  flex cursor-pointer
+                  items-center
+                  justify-center
+                  gap-2
+                  rounded-xl
+                  bg-blue-500
+                  px-6 py-3
+                  text-sm
+                  font-medium
+                  text-white
+                  transition
+                  hover:bg-blue-600
+                "
+              >
+                <FiSave />
 
-        <label className="relative inline-flex items-center cursor-pointer">
-          <input
-            type="checkbox"
-            checked={darkMode}
-            onChange={() => setDarkMode((prev) => !prev)}
-            className="sr-only peer"
-          />
-          <div className="w-14 h-8 bg-gray-300 peer-focus:ring-2 rounded-full peer peer-checked:bg-blue-600 transition" />
-          <span className="absolute left-1 top-1 w-6 h-6 bg-white rounded-full shadow transition peer-checked:translate-x-6" />
-        </label>
-      </div> */}
-
-      {/* ABOUT */}
-      <div className="mb-8">
-        <p className="text-blue-500 text-lg font-medium">About</p>
-        <div className="flex flex-col justify-between p-2">
-          <p className="text-blue-500 text-2xl font-medium mb-2"> Give your eyes a rest will ya!</p>
-          <p className="text-blue-500 text-lg font-light">Inspired by the 20 20 20 rule, this is a little reminder to look 20 feet away from your screen every 20 minutes. 
-          <br/>
-          <br />
-          Keep your eyes healthy, reduce eye strain, prevent headaches and increase productivity.
-          No need to stay on this tab, enable the browser notification or just listen out for the sound every 20 mins... </p>
-        </div>
+                Save Settings
+              </button>
+            </div>
+          </div>
+        </form>
       </div>
     </main>
   );
