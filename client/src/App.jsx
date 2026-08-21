@@ -10,14 +10,14 @@ import Home from "./pages/Home";
 import Tasks from "./pages/Tasks";
 import Notes from "./pages/Notes";
 import Settings from "./pages/Settings";
-import Fallback from "./pages/Fallback"; 
+import Fallback from "./pages/Fallback";
 import Maintenance from "./pages/Maintenance";
 
-const MAINTENANCE_MODE = false;
+const MAINTENANCE_MODE = true;
 
 function App() {
 
-   if (MAINTENANCE_MODE) {
+  if (MAINTENANCE_MODE) {
     return <Maintenance />;
   }
 
