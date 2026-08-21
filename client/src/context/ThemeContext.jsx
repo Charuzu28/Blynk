@@ -18,7 +18,13 @@ export const ThemeProvider = ({children}) => {
 
     useEffect(() => {
         try{
-            localStorage.setItem(STORAGE_KEY, JSON.stringify({theme, stringify}))
+            localStorage.setItem(
+                STORAGE_KEY,
+                JSON.stringify({
+                    theme,
+                    darkMode,
+                })
+                );
         }catch(err){}
     },[theme, darkMode]);
 
