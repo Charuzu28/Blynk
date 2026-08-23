@@ -8,6 +8,13 @@ import taskRoutes from "./routes/task.routes.js";
 import noteRoutes from "./routes/note.routes.js";
 import focusSessionRoutes from "./routes/focusSession.routes.js";
 import settingsRoutes from "./routes/settings.routes.js";
+import {
+  notFound,
+} from "./middleware/notFound.middleware.js";
+
+import {
+  errorHandler,
+} from "./middleware/error.middleware.js";
 
 import {
   apiLimiter,
@@ -58,5 +65,8 @@ app.use(
   "/api/settings",
   settingsRoutes
 );
+
+app.use(notFound);
+app.use(errorHandler);
 
 export default app;
