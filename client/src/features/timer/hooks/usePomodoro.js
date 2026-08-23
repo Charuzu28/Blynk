@@ -18,32 +18,29 @@ const usePomodoroTimer = ({
     TIMER_MODES.POMODORO
   );
 
-  const [timeLeft, setTimeLeft] =
-    useState(
-      durations[
-        TIMER_MODES.POMODORO
-      ]
-    );
+  const [timeLeft, setTimeLeft] = useState(
+    durations[TIMER_MODES.POMODORO]
+  );
 
   const [isRunning, setIsRunning] =
     useState(false);
 
   const endAtRef = useRef(null);
 
-  const completionHandledRef =
-    useRef(false);
+  const completionHandledRef = useRef(false);
 
-  const onCompleteRef =
-    useRef(onComplete);
+  const onCompleteRef = useRef(onComplete);
 
-  const duration =
-    durations[mode];
+  const duration = durations[mode];
 
+  // Keep the latest onComplete callback
   useEffect(() => {
-    onCompleteRef.current =
-      onComplete;
+    onCompleteRef.current = onComplete;
   }, [onComplete]);
 
+  // --------------------------------------------------
+  // Timer countdown
+  // --------------------------------------------------
   useEffect(() => {
     if (
       !isRunning ||
@@ -52,49 +49,40 @@ const usePomodoroTimer = ({
       return;
     }
 
-    const intervalId =
-      window.setInterval(() => {
-        const remaining =
-          Math.max(
-            0,
-            Math.ceil(
-              (
-                endAtRef.current -
-                Date.now()
-              ) / 1000
-            )
-          );
+    const intervalId = window.setInterval(() => {
+      const remaining = Math.max(
+        0,
+        Math.ceil(
+          (endAtRef.current - Date.now()) /
+            1000
+        )
+      );
 
-        setTimeLeft(remaining);
+      setTimeLeft(remaining);
 
-        if (remaining === 0) {
-          window.clearInterval(
-            intervalId
-          );
+      // Timer completed
+      if (remaining === 0) {
+        window.clearInterval(intervalId);
 
-          endAtRef.current =
-            null;
+        endAtRef.current = null;
 
-          setIsRunning(false);
+        setIsRunning(false);
 
-          if (
-            !completionHandledRef.current
-          ) {
-            completionHandledRef.current =
-              true;
+        if (
+          !completionHandledRef.current
+        ) {
+          completionHandledRef.current = true;
 
-            onCompleteRef.current?.({
-              mode,
-              duration,
-            });
-          }
+          onCompleteRef.current?.({
+            mode,
+            duration,
+          });
         }
-      }, 250);
+      }
+    }, 250);
 
     return () => {
-      window.clearInterval(
-        intervalId
-      );
+      window.clearInterval(intervalId);
     };
   }, [
     isRunning,
@@ -102,128 +90,117 @@ const usePomodoroTimer = ({
     duration,
   ]);
 
-  /*
-   * If settings change while the timer
-   * isn't running, update the displayed
-   * duration.
-   */
+  // --------------------------------------------------
+  // Update duration when settings change
+  //
+  // IMPORTANT:
+  // Do NOT include isRunning in the dependency
+  // array. Otherwise pausing the timer would reset
+  // timeLeft back to the full duration.
+  // --------------------------------------------------
   useEffect(() => {
     if (!isRunning) {
       setTimeLeft(duration);
     }
-  }, [
-    duration,
-    isRunning,
-  ]);
+  }, [duration]);
 
+  // --------------------------------------------------
+  // Start / Resume
+  // --------------------------------------------------
   const start = useCallback(() => {
     if (timeLeft <= 0) {
       return;
     }
 
-    completionHandledRef.current =
-      false;
+    completionHandledRef.current = false;
 
     endAtRef.current =
-      Date.now() +
-      timeLeft * 1000;
+      Date.now() + timeLeft * 1000;
 
     setIsRunning(true);
   }, [timeLeft]);
 
-  const pause =
-    useCallback(() => {
-      if (endAtRef.current) {
-        const remaining =
-          Math.max(
-            0,
-            Math.ceil(
-              (
-                endAtRef.current -
-                Date.now()
-              ) / 1000
-            )
-          );
-
-        setTimeLeft(
-          remaining
-        );
-      }
-
-      endAtRef.current =
-        null;
-
-      setIsRunning(false);
-    }, []);
-
-  const reset =
-    useCallback(() => {
-      endAtRef.current =
-        null;
-
-      completionHandledRef.current =
-        false;
-
-      setIsRunning(false);
-
-      setTimeLeft(
-        durations[mode]
+  // --------------------------------------------------
+  // Pause
+  // --------------------------------------------------
+  const pause = useCallback(() => {
+    if (endAtRef.current) {
+      const remaining = Math.max(
+        0,
+        Math.ceil(
+          (endAtRef.current - Date.now()) /
+            1000
+        )
       );
-    }, [
-      durations,
-      mode,
-    ]);
 
-  const changeMode =
-    useCallback(
-      (nextMode) => {
-        if (
-          !durations[
-            nextMode
-          ]
-        ) {
-          return;
-        }
+      setTimeLeft(remaining);
+    }
 
-        endAtRef.current =
-          null;
+    // Stop the countdown without resetting
+    // the remaining time.
+    endAtRef.current = null;
 
-        completionHandledRef.current =
-          false;
+    setIsRunning(false);
+  }, []);
 
-        setIsRunning(false);
+  // --------------------------------------------------
+  // Reset
+  // --------------------------------------------------
+  const reset = useCallback(() => {
+    endAtRef.current = null;
 
-        setMode(nextMode);
+    completionHandledRef.current = false;
 
-        setTimeLeft(
-          durations[
-            nextMode
-          ]
-        );
-      },
-      [durations]
-    );
+    setIsRunning(false);
 
-  const toggleTimer =
-    useCallback(() => {
-      if (isRunning) {
-        pause();
+    setTimeLeft(durations[mode]);
+  }, [durations, mode]);
+
+  // --------------------------------------------------
+  // Change timer mode
+  // --------------------------------------------------
+  const changeMode = useCallback(
+    (nextMode) => {
+      if (!durations[nextMode]) {
         return;
       }
 
-      start();
-    }, [
-      isRunning,
-      pause,
-      start,
-    ]);
+      endAtRef.current = null;
+
+      completionHandledRef.current = false;
+
+      setIsRunning(false);
+
+      setMode(nextMode);
+
+      setTimeLeft(
+        durations[nextMode]
+      );
+    },
+    [durations]
+  );
+
+  // --------------------------------------------------
+  // Toggle Start / Pause
+  // --------------------------------------------------
+  const toggleTimer = useCallback(() => {
+    if (isRunning) {
+      pause();
+      return;
+    }
+
+    start();
+  }, [
+    isRunning,
+    pause,
+    start,
+  ]);
 
   return {
     mode,
     timeLeft,
     duration,
     isRunning,
-
     start,
     pause,
     reset,

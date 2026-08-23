@@ -41,18 +41,23 @@ const {
   recordFocusSession,
 } = useFocusSessions();
 
-const handleFocusComplete = ({
+const handleFocusComplete = async ({
   task,
   duration,
 }) => {
-  recordFocusSession({
-    taskId: task?.id ?? null,
-    taskTitle: task?.title ?? null,
-    duration,
-  });
+  const session =
+    await recordFocusSession({
+      taskId: task?.id ?? null,
+      taskTitle: task?.title ?? null,
+      duration,
+    });
+
+  if (!session) {
+    return;
+  }
 
   if (task?.id) {
-    incrementTaskPomodoro(task.id);
+    await incrementTaskPomodoro(task.id);
   }
 };
 

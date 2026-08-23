@@ -1,30 +1,63 @@
-import { useMemo, useState, useEffect } from "react";
+import {
+  useEffect,
+  useMemo,
+  useState,
+} from "react";
 
-const STORAGE_KEY = "blynk_notes_v2";
-
-const createNoteId = () => {
-  return crypto.randomUUID();
-};
+import {
+  createNote,
+  deleteNoteById,
+  getNotes,
+  updateNoteById,
+} from "../services/notes.api";
 
 const useNotes = () => {
-  const [notes, setNotes] = useState(() => {
-    try {
-      const savedNotes = localStorage.getItem(STORAGE_KEY);
+  const [notes, setNotes] = useState([]);
 
-      return savedNotes ? JSON.parse(savedNotes) : [];
-    } catch {
-      return [];
-    }
-  });
+  const [isLoading, setIsLoading] =
+    useState(true);
+
+  const [error, setError] = useState(null);
 
   useEffect(() => {
-    localStorage.setItem(
-      STORAGE_KEY,
-      JSON.stringify(notes)
-    );
-  }, [notes]);
+    let isMounted = true;
 
-  const addNote = ({ title, content }) => {
+    const loadNotes = async () => {
+      try {
+        setError(null);
+
+        const loadedNotes = await getNotes();
+
+        if (isMounted) {
+          setNotes(loadedNotes);
+        }
+      } catch (error) {
+        console.error(
+          "Unable to load notes:",
+          error
+        );
+
+        if (isMounted) {
+          setError(error.message);
+        }
+      } finally {
+        if (isMounted) {
+          setIsLoading(false);
+        }
+      }
+    };
+
+    loadNotes();
+
+    return () => {
+      isMounted = false;
+    };
+  }, []);
+
+  const addNote = async ({
+    title,
+    content,
+  }) => {
     const cleanTitle = title.trim();
     const cleanContent = content.trim();
 
@@ -32,25 +65,33 @@ const useNotes = () => {
       return null;
     }
 
-    const now = new Date().toISOString();
+    try {
+      setError(null);
 
-    const note = {
-      id: createNoteId(),
-      title: cleanTitle || "Untitled note",
-      content: cleanContent,
-      createdAt: now,
-      updatedAt: now,
-    };
+      const note = await createNote({
+        title: cleanTitle,
+        content: cleanContent,
+      });
 
-    setNotes((currentNotes) => [
-      note,
-      ...currentNotes,
-    ]);
+      setNotes((currentNotes) => [
+        note,
+        ...currentNotes,
+      ]);
 
-    return note;
+      return note;
+    } catch (error) {
+      console.error(
+        "Unable to create note:",
+        error
+      );
+
+      setError(error.message);
+
+      return null;
+    }
   };
 
-  const updateNote = (
+  const updateNote = async (
     noteId,
     { title, content }
   ) => {
@@ -58,32 +99,62 @@ const useNotes = () => {
     const cleanContent = content.trim();
 
     if (!cleanTitle && !cleanContent) {
-      return;
+      return null;
     }
 
-    setNotes((currentNotes) =>
-      currentNotes.map((note) =>
-        note.id === noteId
-          ? {
-              ...note,
-              title:
-                cleanTitle ||
-                "Untitled note",
-              content: cleanContent,
-              updatedAt:
-                new Date().toISOString(),
-            }
-          : note
-      )
-    );
+    try {
+      setError(null);
+
+      const updatedNote =
+        await updateNoteById(noteId, {
+          title: cleanTitle,
+          content: cleanContent,
+        });
+
+      setNotes((currentNotes) =>
+        currentNotes.map((note) =>
+          note.id === noteId
+            ? updatedNote
+            : note
+        )
+      );
+
+      return updatedNote;
+    } catch (error) {
+      console.error(
+        "Unable to update note:",
+        error
+      );
+
+      setError(error.message);
+
+      return null;
+    }
   };
 
-  const deleteNote = (noteId) => {
-    setNotes((currentNotes) =>
-      currentNotes.filter(
-        (note) => note.id !== noteId
-      )
-    );
+  const deleteNote = async (noteId) => {
+    try {
+      setError(null);
+
+      await deleteNoteById(noteId);
+
+      setNotes((currentNotes) =>
+        currentNotes.filter(
+          (note) => note.id !== noteId
+        )
+      );
+
+      return true;
+    } catch (error) {
+      console.error(
+        "Unable to delete note:",
+        error
+      );
+
+      setError(error.message);
+
+      return false;
+    }
   };
 
   const sortedNotes = useMemo(() => {
@@ -96,6 +167,10 @@ const useNotes = () => {
 
   return {
     notes: sortedNotes,
+
+    isLoading,
+    error,
+
     addNote,
     updateNote,
     deleteNote,

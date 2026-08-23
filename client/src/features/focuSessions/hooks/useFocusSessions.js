@@ -1,76 +1,111 @@
-import { useEffect, useMemo, useState } from "react";
+import {
+  useEffect,
+  useMemo,
+  useState,
+} from "react";
 
-const STORAGE_KEY = "blynk_focus_sessions_v2";
-
-const createSessionId = () => crypto.randomUUID();
+import {
+  createFocusSession,
+  getFocusSessions,
+} from "../services/focusSession.api";
 
 const useFocusSessions = () => {
-  const [sessions, setSessions] = useState(() => {
-    try {
-      const savedSessions = localStorage.getItem(STORAGE_KEY);
+  const [sessions, setSessions] = useState([]);
 
-      return savedSessions
-        ? JSON.parse(savedSessions)
-        : [];
-    } catch {
-      return [];
-    }
-  });
+  const [isLoading, setIsLoading] =
+    useState(true);
+
+  const [error, setError] = useState(null);
 
   useEffect(() => {
-    localStorage.setItem(
-      STORAGE_KEY,
-      JSON.stringify(sessions)
-    );
-  }, [sessions]);
+    let isMounted = true;
 
-  const recordFocusSession = ({
+    const loadSessions = async () => {
+      try {
+        setError(null);
+
+        const loadedSessions =
+          await getFocusSessions();
+
+        if (isMounted) {
+          setSessions(loadedSessions);
+        }
+      } catch (error) {
+        console.error(
+          "Unable to load focus sessions:",
+          error
+        );
+
+        if (isMounted) {
+          setError(error.message);
+        }
+      } finally {
+        if (isMounted) {
+          setIsLoading(false);
+        }
+      }
+    };
+
+    loadSessions();
+
+    return () => {
+      isMounted = false;
+    };
+  }, []);
+
+  const recordFocusSession = async ({
     taskId = null,
     taskTitle = null,
     duration,
   }) => {
-    const session = {
-      id: createSessionId(),
+    if (
+      !Number.isInteger(duration) ||
+      duration <= 0
+    ) {
+      return null;
+    }
 
-      type: "pomodoro",
+    try {
+      setError(null);
 
-      taskId,
-      taskTitle,
+      const session =
+        await createFocusSession({
+          taskId,
+          taskTitle,
+          duration,
+        });
 
-      duration,
+      setSessions((currentSessions) => [
+        session,
+        ...currentSessions,
+      ]);
 
-      completed: true,
-      completedAt: new Date().toISOString(),
-    };
+      return session;
+    } catch (error) {
+      console.error(
+        "Unable to record focus session:",
+        error
+      );
 
-    setSessions((currentSessions) => [
-      session,
-      ...currentSessions,
-    ]);
+      setError(error.message);
 
-    return session;
+      return null;
+    }
   };
 
-  const completedSessions = useMemo(() => {
-    return sessions.filter(
-      (session) =>
-        session.completed &&
-        session.type === "pomodoro"
+  const sortedSessions = useMemo(() => {
+    return [...sessions].sort(
+      (a, b) =>
+        new Date(b.completedAt) -
+        new Date(a.completedAt)
     );
   }, [sessions]);
 
-  const totalFocusSeconds = useMemo(() => {
-    return completedSessions.reduce(
-      (total, session) =>
-        total + session.duration,
-      0
-    );
-  }, [completedSessions]);
-
   return {
-    sessions,
-    completedSessions,
-    totalFocusSeconds,
+    sessions: sortedSessions,
+
+    isLoading,
+    error,
 
     recordFocusSession,
   };

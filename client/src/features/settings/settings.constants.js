@@ -9,6 +9,3 @@ export const DEFAULT_SETTINGS = {
 
   soundEnabled: true,
 };
-
-export const SETTINGS_STORAGE_KEY =
-  "blynk_settings_v2";

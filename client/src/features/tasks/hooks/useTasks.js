@@ -1,34 +1,80 @@
-import { useEffect, useMemo, useState } from "react";
+import {
+  useEffect,
+  useMemo,
+  useState,
+} from "react";
 
-const STORAGE_KEY = "blynk_tasks_v2";
-const SELECTED_TASK_KEY = "blynk_selected_task_v2";
+import {
+  createTask,
+  deleteTaskById,
+  getTasks,
+  incrementTaskPomodoroById,
+  updateTask,
+} from "../services/tasks.api";
 
-const createTaskId = () => {
-  return crypto.randomUUID();
-};
+const SELECTED_TASK_KEY =
+  "blynk_selected_task_v2";
 
 const useTasks = () => {
-  const [tasks, setTasks] = useState(() => {
-    try {
-      const savedTasks = localStorage.getItem(STORAGE_KEY);
+  const [tasks, setTasks] = useState([]);
 
-      return savedTasks ? JSON.parse(savedTasks) : [];
-    } catch {
-      return [];
-    }
-  });
+  const [isLoading, setIsLoading] =
+    useState(true);
 
-  const [selectedTaskId, setSelectedTaskId] = useState(() => {
-    return localStorage.getItem(SELECTED_TASK_KEY) || null;
-  });
+  const [error, setError] = useState(null);
 
+  const [selectedTaskId, setSelectedTaskId] =
+    useState(() => {
+      return (
+        localStorage.getItem(
+          SELECTED_TASK_KEY
+        ) || null
+      );
+    });
+
+  /*
+   * Load authenticated user's tasks
+   * from MongoDB.
+   */
   useEffect(() => {
-    localStorage.setItem(
-      STORAGE_KEY,
-      JSON.stringify(tasks)
-    );
-  }, [tasks]);
+    let isMounted = true;
 
+    const loadTasks = async () => {
+      try {
+        setError(null);
+
+        const loadedTasks = await getTasks();
+
+        if (isMounted) {
+          setTasks(loadedTasks);
+        }
+      } catch (error) {
+        console.error(
+          "Unable to load tasks:",
+          error
+        );
+
+        if (isMounted) {
+          setError(error.message);
+        }
+      } finally {
+        if (isMounted) {
+          setIsLoading(false);
+        }
+      }
+    };
+
+    loadTasks();
+
+    return () => {
+      isMounted = false;
+    };
+  }, []);
+
+  /*
+   * Active task selection remains
+   * local UI state for now.
+   */
   useEffect(() => {
     if (selectedTaskId) {
       localStorage.setItem(
@@ -42,77 +88,174 @@ const useTasks = () => {
     }
   }, [selectedTaskId]);
 
-  const addTask = (
+  /*
+   * Clear a selected task if it no longer
+   * exists in the authenticated user's tasks.
+   */
+  useEffect(() => {
+    if (
+      isLoading ||
+      !selectedTaskId
+    ) {
+      return;
+    }
+
+    const taskExists = tasks.some(
+      (task) => task.id === selectedTaskId
+    );
+
+    if (!taskExists) {
+      setSelectedTaskId(null);
+    }
+  }, [
+    tasks,
+    selectedTaskId,
+    isLoading,
+  ]);
+
+  const addTask = async (
     title,
     estimatedPomodoros = 1
   ) => {
     const cleanTitle = title.trim();
 
     if (!cleanTitle) {
-      return;
+      return null;
     }
 
-    const task = {
-      id: createTaskId(),
-      title: cleanTitle,
-      completed: false,
-      estimatedPomodoros,
-      completedPomodoros: 0,
-      createdAt: new Date().toISOString(),
-    };
+    try {
+      setError(null);
 
-    setTasks((currentTasks) => [
-      ...currentTasks,
-      task,
-    ]);
+      const task = await createTask({
+        title: cleanTitle,
+        estimatedPomodoros,
+      });
 
-    return task;
+      setTasks((currentTasks) => [
+        task,
+        ...currentTasks,
+      ]);
+
+      return task;
+    } catch (error) {
+      console.error(
+        "Unable to create task:",
+        error
+      );
+
+      setError(error.message);
+
+      return null;
+    }
   };
 
-  const toggleTask = (taskId) => {
-    setTasks((currentTasks) =>
-      currentTasks.map((task) =>
-        task.id === taskId
-          ? {
-              ...task,
-              completed: !task.completed,
-            }
-          : task
-      )
+  const toggleTask = async (taskId) => {
+    const task = tasks.find(
+      (task) => task.id === taskId
     );
+
+    if (!task) {
+      return null;
+    }
+
+    try {
+      setError(null);
+
+      const updatedTask = await updateTask(
+        taskId,
+        {
+          completed: !task.completed,
+        }
+      );
+
+      setTasks((currentTasks) =>
+        currentTasks.map((task) =>
+          task.id === taskId
+            ? updatedTask
+            : task
+        )
+      );
+
+      return updatedTask;
+    } catch (error) {
+      console.error(
+        "Unable to update task:",
+        error
+      );
+
+      setError(error.message);
+
+      return null;
+    }
   };
 
-  const updateTaskTitle = (
+  const updateTaskTitle = async (
     taskId,
     nextTitle
   ) => {
     const cleanTitle = nextTitle.trim();
 
     if (!cleanTitle) {
-      return;
+      return null;
     }
 
-    setTasks((currentTasks) =>
-      currentTasks.map((task) =>
-        task.id === taskId
-          ? {
-              ...task,
-              title: cleanTitle,
-            }
-          : task
-      )
-    );
+    try {
+      setError(null);
+
+      const updatedTask = await updateTask(
+        taskId,
+        {
+          title: cleanTitle,
+        }
+      );
+
+      setTasks((currentTasks) =>
+        currentTasks.map((task) =>
+          task.id === taskId
+            ? updatedTask
+            : task
+        )
+      );
+
+      return updatedTask;
+    } catch (error) {
+      console.error(
+        "Unable to rename task:",
+        error
+      );
+
+      setError(error.message);
+
+      return null;
+    }
   };
 
-  const deleteTask = (taskId) => {
-    setTasks((currentTasks) =>
-      currentTasks.filter(
-        (task) => task.id !== taskId
-      )
-    );
+  const deleteTask = async (taskId) => {
+    try {
+      setError(null);
 
-    if (selectedTaskId === taskId) {
-      setSelectedTaskId(null);
+      await deleteTaskById(taskId);
+
+      setTasks((currentTasks) =>
+        currentTasks.filter(
+          (task) => task.id !== taskId
+        )
+      );
+
+      if (selectedTaskId === taskId) {
+        setSelectedTaskId(null);
+      }
+
+      return true;
+    } catch (error) {
+      console.error(
+        "Unable to delete task:",
+        error
+      );
+
+      setError(error.message);
+
+      return false;
     }
   };
 
@@ -131,39 +274,62 @@ const useTasks = () => {
           task.id === selectedTaskId
       ) || null
     );
-  }, [tasks, selectedTaskId]);
+  }, [
+    tasks,
+    selectedTaskId,
+  ]);
 
-  const incrementTaskPomodoro = (taskId) => {
-  if (!taskId) {
-    return;
-  }
+  const incrementTaskPomodoro =
+    async (taskId) => {
+      if (!taskId) {
+        return null;
+      }
 
-  setTasks((currentTasks) =>
-    currentTasks.map((task) =>
-      task.id === taskId
-        ? {
-            ...task,
-            completedPomodoros:
-              task.completedPomodoros + 1,
-          }
-        : task
-    )
-  );
-};
+      try {
+        setError(null);
+
+        const updatedTask =
+          await incrementTaskPomodoroById(
+            taskId
+          );
+
+        setTasks((currentTasks) =>
+          currentTasks.map((task) =>
+            task.id === taskId
+              ? updatedTask
+              : task
+          )
+        );
+
+        return updatedTask;
+      } catch (error) {
+        console.error(
+          "Unable to increment task Pomodoro:",
+          error
+        );
+
+        setError(error.message);
+
+        return null;
+      }
+    };
 
   return {
-  tasks,
-  selectedTask,
-  selectedTaskId,
+    tasks,
 
-  addTask,
-  toggleTask,
-  updateTaskTitle,
-  deleteTask,
-  selectTask,
-  incrementTaskPomodoro,
-};
+    selectedTask,
+    selectedTaskId,
 
+    isLoading,
+    error,
+
+    addTask,
+    toggleTask,
+    updateTaskTitle,
+    deleteTask,
+    selectTask,
+    incrementTaskPomodoro,
+  };
 };
 
 export default useTasks;
