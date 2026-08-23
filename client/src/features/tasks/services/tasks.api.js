@@ -1,6 +1,6 @@
-const API_BASE_URL =
-  import.meta.env.VITE_API_URL ||
-  "http://localhost:5000";
+import {
+  apiRequest,
+} from "../../../services/apiClient";
 
 const request = async (path, options = {}) => {
   const response = await fetch(
@@ -33,7 +33,7 @@ const request = async (path, options = {}) => {
 };
 
 export const getTasks = async () => {
-  const data = await request("/api/tasks");
+  const data = await apiRequest("/api/tasks");
 
   return data.tasks;
 };
@@ -42,7 +42,7 @@ export const createTask = async ({
   title,
   estimatedPomodoros,
 }) => {
-  const data = await request("/api/tasks", {
+  const data = await apiRequest("/api/tasks", {
     method: "POST",
     body: JSON.stringify({
       title,
@@ -57,7 +57,7 @@ export const updateTask = async (
   taskId,
   updates
 ) => {
-  const data = await request(
+  const data = await apiRequest(
     `/api/tasks/${taskId}`,
     {
       method: "PATCH",
@@ -69,14 +69,14 @@ export const updateTask = async (
 };
 
 export const deleteTaskById = async (taskId) => {
-  await request(`/api/tasks/${taskId}`, {
+  await apiRequest(`/api/tasks/${taskId}`, {
     method: "DELETE",
   });
 };
 
 export const incrementTaskPomodoroById =
   async (taskId) => {
-    const data = await request(
+    const data = await apiRequest(
       `/api/tasks/${taskId}/pomodoro`,
       {
         method: "PATCH",
