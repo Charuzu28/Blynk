@@ -7,6 +7,8 @@ import App from "./App.jsx";
 
 import { ThemeProvider } from "./context/ThemeContext.jsx";
 
+import { AuthProvider } from "./features/auth/context/AuthContext.jsx";
+
 import { SettingsProvider } from "./features/settings/context/SettingContext.jsx";
 
 createRoot(
@@ -14,9 +16,11 @@ createRoot(
 ).render(
   <StrictMode>
     <ThemeProvider>
-      <SettingsProvider>
-        <App />
-      </SettingsProvider>
+      <AuthProvider>
+        <SettingsProvider>
+          <App />
+        </SettingsProvider>
+      </AuthProvider>
     </ThemeProvider>
   </StrictMode>
 );

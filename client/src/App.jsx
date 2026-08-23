@@ -6,6 +6,8 @@ import {
 
 import AppLayout from "./components/layout/AppLayout";
 
+import ProtectedRoute from "./features/auth/components/ProtectedRoute";
+
 import Home from "./pages/Home";
 import Tasks from "./pages/Tasks";
 import Notes from "./pages/Notes";
@@ -13,10 +15,12 @@ import Settings from "./pages/Settings";
 import Fallback from "./pages/Fallback";
 import Maintenance from "./pages/Maintenance";
 
-const MAINTENANCE_MODE = true;
+import Login from "./pages/Login";
+import Register from "./pages/Register";
+
+const MAINTENANCE_MODE = false;
 
 function App() {
-
   if (MAINTENANCE_MODE) {
     return <Maintenance />;
   }
@@ -24,29 +28,45 @@ function App() {
   return (
     <BrowserRouter>
       <Routes>
-        <Route element={<AppLayout />}>
-          <Route
-            path="/"
-            element={<Home />}
-          />
+        {/* Public routes */}
+        <Route
+          path="/login"
+          element={<Login />}
+        />
 
-          <Route
-            path="/tasks"
-            element={<Tasks />}
-          />
+        <Route
+          path="/register"
+          element={<Register />}
+        />
 
-          <Route
-            path="/notes"
-            element={<Notes />}
-          />
+        {/* Protected application */}
+        <Route element={<ProtectedRoute />}>
+          <Route element={<AppLayout />}>
+            <Route
+              path="/"
+              element={<Home />}
+            />
 
-          <Route
-            path="/settings"
-            element={<Settings />}
-          />
+            <Route
+              path="/tasks"
+              element={<Tasks />}
+            />
 
-          <Route path="*" element={<Fallback />} />
+            <Route
+              path="/notes"
+              element={<Notes />}
+            />
 
+            <Route
+              path="/settings"
+              element={<Settings />}
+            />
+
+            <Route
+              path="*"
+              element={<Fallback />}
+            />
+          </Route>
         </Route>
       </Routes>
     </BrowserRouter>
