@@ -1,6 +1,6 @@
-const API_BASE_URL =
-  import.meta.env.VITE_API_URL ||
-  "http://localhost:5000";
+import {
+  apiRequest,
+} from "../../../services/apiClient";
 
 const request = async (path, options = {}) => {
   const response = await fetch(
@@ -34,7 +34,7 @@ const request = async (path, options = {}) => {
 };
 
 export const getFocusSessions = async () => {
-  const data = await request(
+  const data = await apiRequest(
     "/api/focus-sessions"
   );
 
@@ -46,7 +46,7 @@ export const createFocusSession = async ({
   taskTitle,
   duration,
 }) => {
-  const data = await request(
+  const data = await apiRequest(
     "/api/focus-sessions",
     {
       method: "POST",

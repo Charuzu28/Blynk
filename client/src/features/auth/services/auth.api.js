@@ -1,5 +1,6 @@
-const API_BASE_URL =
-  import.meta.env.VITE_API_URL || "http://localhost:5000";
+import {
+  apiRequest,
+} from "../../../services/apiClient";
 
 const request = async (path, options = {}) => {
   const response = await fetch(`${API_BASE_URL}${path}`, {
@@ -31,7 +32,7 @@ export const registerUser = async ({
   email,
   password,
 }) => {
-  const data = await request("/api/auth/register", {
+  const data = await apiRequest("/api/auth/register", {
     method: "POST",
     body: JSON.stringify({
       name,
@@ -47,7 +48,7 @@ export const loginUser = async ({
   email,
   password,
 }) => {
-  const data = await request("/api/auth/login", {
+  const data = await apiRequest("/api/auth/login", {
     method: "POST",
     body: JSON.stringify({
       email,
@@ -60,7 +61,7 @@ export const loginUser = async ({
 
 export const getCurrentUser = async () => {
   try {
-    const data = await request("/api/auth/me");
+    const data = await apiRequest("/api/auth/me");
 
     return data.user;
   } catch (error) {
