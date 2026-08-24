@@ -18,7 +18,7 @@ import Maintenance from "./pages/Maintenance";
 import Login from "./pages/Login";
 import Register from "./pages/Register";
 
-const MAINTENANCE_MODE = true;
+const MAINTENANCE_MODE = false;
 
 function App() {
   if (MAINTENANCE_MODE) {
