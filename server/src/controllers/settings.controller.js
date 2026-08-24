@@ -10,6 +10,10 @@ const formatSettings = (settings) => ({
   eyeBreakSeconds: settings.eyeBreakSeconds,
 
   soundEnabled: settings.soundEnabled,
+  alarmSound: settings.alarmSound,
+  alarmVolume: settings.alarmVolume,
+
+  timerRingStyle: settings.timerRingStyle,
 });
 
 export const getSettings = async (req, res) => {
@@ -58,6 +62,9 @@ export const updateSettings = async (
       "eyeReminderMinutes",
       "eyeBreakSeconds",
       "soundEnabled",
+      "alarmSound",
+      "alarmVolume",
+      "timerRingStyle",
     ];
 
     const updates = {};

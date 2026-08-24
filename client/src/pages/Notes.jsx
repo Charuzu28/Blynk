@@ -9,9 +9,15 @@ import useNotes from "../features/notes/hooks/useNotes";
 
 import NotesWidget from "../features/notes/components/NotesWidget";
 
+import WidgetState from "../components/shared/WidgetState";
+
 const Notes = () => {
   const {
     notes,
+
+    isLoading,
+    error,
+
     addNote,
     updateNote,
     deleteNote,
@@ -36,11 +42,7 @@ const Notes = () => {
             justify-between
           "
         >
-          <div
-            className="
-              flex items-center gap-4
-            "
-          >
+          <div className="flex items-center gap-4">
             <Link
               to="/"
               aria-label="Back home"
@@ -77,43 +79,53 @@ const Notes = () => {
                   text-slate-400
                 "
               >
-                Capture ideas while
-                you're studying.
+                Capture ideas while you're studying.
               </p>
             </div>
           </div>
 
-          <div
-            className="
-              hidden items-center
-              gap-2
-              rounded-xl
-              bg-blue-50
-              px-4 py-2
-              text-sm
-              text-blue-500
-              sm:flex
-            "
-          >
-            <FiFileText />
+          {!isLoading && !error && (
+            <div
+              className="
+                hidden items-center
+                gap-2
+                rounded-xl
+                bg-blue-50
+                px-4 py-2
+                text-sm
+                text-blue-500
+                sm:flex
+              "
+            >
+              <FiFileText />
 
-            {notes.length}{" "}
-            {notes.length === 1
-              ? "note"
-              : "notes"}
-          </div>
+              {notes.length}{" "}
+              {notes.length === 1
+                ? "note"
+                : "notes"}
+            </div>
+          )}
         </header>
 
-        <NotesWidget
-          notes={notes}
-          onAddNote={addNote}
-          onUpdateNote={
-            updateNote
-          }
-          onDeleteNote={
-            deleteNote
-          }
-        />
+        {isLoading ? (
+          <WidgetState
+            title="Loading notes"
+            message="Getting your saved notes."
+          />
+        ) : error ? (
+          <WidgetState
+            type="error"
+            title="Couldn't load notes"
+            message={error}
+          />
+        ) : (
+          <NotesWidget
+            notes={notes}
+            onAddNote={addNote}
+            onUpdateNote={updateNote}
+            onDeleteNote={deleteNote}
+          />
+        )}
       </div>
     </main>
   );

@@ -8,4 +8,8 @@ export const DEFAULT_SETTINGS = {
   eyeBreakSeconds: 20,
 
   soundEnabled: true,
+  alarmSound: "default",
+  alarmVolume: 80,
+
+  timerRingStyle: "solid",
 };

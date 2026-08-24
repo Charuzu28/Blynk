@@ -14,13 +14,15 @@ import useFocusSessions
   from "../features/focuSessions/hooks/useFocusSessions";
 import FocusStreakCard
   from "../features/streak/components/FocusStreakCard";
+import WidgetState from "../components/shared/WidgetState";
 
 const Home = () => {
   const {
   tasks,
   selectedTask,
   selectedTaskId,
-
+  isLoading: tasksLoading,
+  error: tasksError,
   addTask,
   toggleTask,
   updateTaskTitle,
@@ -31,6 +33,8 @@ const Home = () => {
 
 const {
   notes,
+  isLoading: notesLoading,
+  error: notesError,
   addNote,
   updateNote,
   deleteNote,
@@ -38,6 +42,8 @@ const {
 
 const {
   sessions,
+  isLoading: sessionsLoading,
+  error: sessionsError,
   recordFocusSession,
 } = useFocusSessions();
 
@@ -99,29 +105,70 @@ const handleFocusComplete = async ({
           {/* LEFT SIDE */}
           <div className="grid gap-5">
             {/* Feature 6: Streak */}
-            <FocusStreakCard
-              sessions={sessions}
-            />
+            {sessionsLoading ? (
+              <WidgetState
+                title="Loading focus activity"
+                message="Restoring your recent focus sessions."
+              />
+            ) : sessionsError ? (
+              <WidgetState
+                type="error"
+                title="Couldn't load focus activity"
+                message={sessionsError}
+              />
+            ) : (
+              <FocusStreakCard
+                sessions={sessions}
+              />
+            )}
 
             <div className="grid gap-5 sm:grid-cols-2">
               {/* Feature 4: Notes */}
-              <NotesWidget
-                notes={notes}
-                onAddNote={addNote}
-                onUpdateNote={updateNote}
-                onDeleteNote={deleteNote}
-              />
+              {notesLoading ? (
+                <WidgetState
+                  title="Loading notes"
+                  message="Getting your latest notes."
+                />
+              ) : notesError ? (
+                <WidgetState
+                  type="error"
+                  title="Couldn't load notes"
+                  message={notesError}
+                />
+              ) : (
+                <NotesWidget
+                  compact
+                  notes={notes}
+                  onAddNote={addNote}
+                  onUpdateNote={updateNote}
+                  onDeleteNote={deleteNote}
+                />
+              )}
 
               {/* Feature 3: Tasks */}
-              <TasksWidget
-                tasks={tasks}
-                selectedTaskId={selectedTaskId}
-                onAddTask={addTask}
-                onToggleTask={toggleTask}
-                onSelectTask={selectTask}
-                onEditTask={updateTaskTitle}
-                onDeleteTask={deleteTask}
-              />
+              {tasksLoading ? (
+                <WidgetState
+                  title="Loading tasks"
+                  message="Getting your current focus tasks."
+                />
+              ) : tasksError ? (
+                <WidgetState
+                  type="error"
+                  title="Couldn't load tasks"
+                  message={tasksError}
+                />
+              ) : (
+                <TasksWidget
+                  compact
+                  tasks={tasks}
+                  selectedTaskId={selectedTaskId}
+                  onAddTask={addTask}
+                  onToggleTask={toggleTask}
+                  onSelectTask={selectTask}
+                  onEditTask={updateTaskTitle}
+                  onDeleteTask={deleteTask}
+                />
+                )}
             </div>
           </div>
 
