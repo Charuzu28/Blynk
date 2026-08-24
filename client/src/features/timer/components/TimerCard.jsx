@@ -30,7 +30,9 @@ import {
 } from "../timer.constants";
 
 import AlertModal from "./AlertModal";
-import alarmSound from "../../../assets/alarm/alarmRing.mp3";
+import {
+  ALARM_SOUNDS,
+} from "../../settings/alarm.constants";
 
 const formatTime = (seconds) => {
   const minutes = Math.floor(seconds / 60)
@@ -106,16 +108,41 @@ const TimerCard = ({
   // --------------------------------------------------
   // Alarm setup
   // --------------------------------------------------
-  useEffect(() => {
-    alarmRef.current = new Audio(alarmSound);
+ useEffect(() => {
+    const selectedAlarm =
+      ALARM_SOUNDS[
+        settings.alarmSound
+      ] ?? ALARM_SOUNDS.default;
+
+    const audio = new Audio(
+      selectedAlarm.src
+    );
+
+    audio.volume =
+      Math.min(
+        Math.max(
+          Number(
+            settings.alarmVolume
+          ) || 0,
+          0
+        ),
+        100
+      ) / 100;
+
+    alarmRef.current = audio;
 
     return () => {
-      if (!alarmRef.current) return;
+      audio.pause();
+      audio.currentTime = 0;
 
-      alarmRef.current.pause();
-      alarmRef.current.currentTime = 0;
+      if (alarmRef.current === audio) {
+        alarmRef.current = null;
+      }
     };
-  }, []);
+  }, [
+    settings.alarmSound,
+    settings.alarmVolume,
+  ]);
 
   // --------------------------------------------------
   // Timer completion
@@ -272,6 +299,7 @@ const TimerCard = ({
           <TimerRing
             timeLeft={timeLeft}
             duration={duration}
+            style={settings.timerRingStyle}
           >
             <div className="flex flex-col items-center text-center">
               <div
