@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { Link } from "react-router-dom";
 
 import {
   FiFileText,
@@ -13,6 +14,7 @@ const NotesWidget = ({
   onAddNote,
   onUpdateNote,
   onDeleteNote,
+  compact = false,
 }) => {
   const [editorOpen, setEditorOpen] =
     useState(false);
@@ -20,10 +22,11 @@ const NotesWidget = ({
   const [editingNote, setEditingNote] =
     useState(null);
 
-  const visibleNotes = notes.slice(
-    0,
-    3
-  );
+  // Dashboard only:
+  // 1–3 notes = normal
+  // 4+ notes = show around 3 rows + scrollbar
+  const shouldScroll =
+    compact && notes.length >= 4;
 
   const openNewNote = () => {
     setEditingNote(null);
@@ -47,10 +50,13 @@ const NotesWidget = ({
         noteData
       );
 
+      closeEditor();
       return;
     }
 
     onAddNote(noteData);
+
+    closeEditor();
   };
 
   return (
@@ -66,6 +72,7 @@ const NotesWidget = ({
           sm:p-6
         "
       >
+        {/* Header */}
         <div
           className="
             flex items-center
@@ -99,8 +106,9 @@ const NotesWidget = ({
           </div>
         </div>
 
-        <div className="mt-5 flex-1">
-          {visibleNotes.length === 0 ? (
+        {/* Notes */}
+        <div className="mt-5 min-h-0 flex-1">
+          {notes.length === 0 ? (
             <div
               className="
                 flex h-full
@@ -140,48 +148,95 @@ const NotesWidget = ({
               </div>
             </div>
           ) : (
-            <div className="space-y-2">
-              {visibleNotes.map(
-                (note) => (
-                  <NoteItem
-                    key={note.id}
-                    note={note}
-                    onEdit={
-                      openEditNote
-                    }
-                    onDelete={
-                      onDeleteNote
-                    }
-                  />
-                )
-              )}
+            <div
+              className={`
+                space-y-2
+
+                ${
+                  shouldScroll
+                    ? `
+                      max-h-[215px]
+                      overflow-y-auto
+                      overscroll-contain
+                      pr-1
+                    `
+                    : ""
+                }
+              `}
+            >
+              {notes.map((note) => (
+                <NoteItem
+                  key={note.id}
+                  note={note}
+                  onEdit={
+                    openEditNote
+                  }
+                  onDelete={
+                    onDeleteNote
+                  }
+                />
+              ))}
             </div>
           )}
         </div>
 
+        {/* View All Notes - Dashboard only */}
+        {compact &&
+          notes.length >= 4 && (
+            <Link
+              to="/notes"
+              className="
+                mt-4
+                border-t
+                border-slate-100
+                pt-4
+                text-center
+                text-sm
+                font-medium
+                text-blue-500
+                transition
+                hover:text-blue-600
+              "
+            >
+              View all notes
+            </Link>
+          )}
+
+        {/* New Note */}
         <button
           type="button"
           onClick={openNewNote}
-          className="
-            mt-4 flex
+          className={`
+            flex
             cursor-pointer
             items-center
-            justify-center gap-2
-            border-t
-            border-slate-100
-            pt-4 text-sm
+            justify-center
+            gap-2
+            text-sm
             font-medium
             text-blue-500
             transition
             hover:text-blue-600
-          "
+
+            ${
+              compact &&
+              notes.length >= 4
+                ? "mt-3"
+                : `
+                  mt-4
+                  border-t
+                  border-slate-100
+                  pt-4
+                `
+            }
+          `}
         >
           <FiPlus size={16} />
-
           New Note
         </button>
       </section>
 
+      {/* Note Editor */}
       <NoteEditor
         open={editorOpen}
         note={editingNote}
