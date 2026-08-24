@@ -54,6 +54,39 @@ const settingsSchema = new mongoose.Schema(
       type: Boolean,
       default: true,
     },
+
+    alarmSound: {
+      type: String,
+      enum: [
+        "default",
+        "catLaugh",
+        "dangerAlarm",
+        "alarmDubist",
+        "fahAlarm",
+        "alarmVoice",
+        "ratDanceAlarm",
+      ],
+      default: "default",
+    },
+
+    alarmVolume: {
+      type: Number,
+      min: [0, "Alarm volume cannot be below 0"],
+      max: [100, "Alarm volume cannot exceed 100"],
+      default: 80,
+    },
+
+    timerRingStyle: {
+      type: String,
+      enum: [
+        "solid",
+        "dashed",
+        "dotted",
+        "wavy",
+        "none",
+      ],
+      default: "solid",
+    },
   },
   {
     timestamps: true,
