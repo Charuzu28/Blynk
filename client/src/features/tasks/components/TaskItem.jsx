@@ -35,18 +35,23 @@ const TaskItem = ({
     if (!cleanTitle) {
       setTitle(task.title);
       setIsEditing(false);
+
       return;
     }
 
     onEdit(task.id, cleanTitle);
+
     setIsEditing(false);
   };
 
   return (
     <div
       className={`
-        group flex items-center gap-3
-        rounded-xl px-2 py-2
+        group
+        flex min-h-11
+        items-center gap-3
+        rounded-xl
+        px-2 py-2
         transition
 
         ${
@@ -67,16 +72,27 @@ const TaskItem = ({
           onToggle(task.id)
         }
         className={`
-          flex h-5 w-5 shrink-0
+          flex h-5 w-5
+          shrink-0
           cursor-pointer
           items-center justify-center
-          rounded-full border
+          rounded-full
+          border
           transition
 
           ${
             task.completed
-              ? "border-blue-500 bg-blue-500 text-white"
-              : "border-slate-300 bg-white text-transparent hover:border-blue-400"
+              ? `
+                border-blue-500
+                bg-blue-500
+                text-white
+              `
+              : `
+                border-slate-300
+                bg-white
+                text-transparent
+                hover:border-blue-400
+              `
           }
         `}
       >
@@ -84,7 +100,10 @@ const TaskItem = ({
       </button>
 
       <div
-        className="min-w-0 flex-1 cursor-pointer"
+        className="
+          min-w-0 flex-1
+          cursor-pointer
+        "
         onClick={() =>
           !isEditing &&
           onSelect(task.id)
@@ -110,15 +129,23 @@ const TaskItem = ({
               if (
                 event.key === "Escape"
               ) {
-                setTitle(task.title);
-                setIsEditing(false);
+                setTitle(
+                  task.title
+                );
+
+                setIsEditing(
+                  false
+                );
               }
             }}
             className="
-              w-full rounded-md
+              w-full
+              rounded-md
               border border-blue-300
-              bg-white px-2 py-1
-              text-sm outline-none
+              bg-white
+              px-2 py-1
+              text-sm
+              outline-none
               focus:ring-2
               focus:ring-blue-100
             "
@@ -130,7 +157,10 @@ const TaskItem = ({
 
               ${
                 task.completed
-                  ? "text-slate-400 line-through"
+                  ? `
+                    text-slate-400
+                    line-through
+                  `
                   : "text-slate-700"
               }
             `}
@@ -144,7 +174,8 @@ const TaskItem = ({
         className="
           flex shrink-0
           items-center gap-1
-          text-xs text-blue-500
+          text-xs
+          text-blue-500
         "
       >
         <FiClock size={14} />
@@ -156,9 +187,22 @@ const TaskItem = ({
 
       <div
         className="
-          hidden shrink-0
-          items-center gap-1
-          group-hover:flex
+          flex w-[62px]
+          shrink-0
+          items-center
+          justify-end gap-1
+
+          opacity-100
+          transition-opacity
+
+          sm:pointer-events-none
+          sm:opacity-0
+
+          sm:group-hover:pointer-events-auto
+          sm:group-hover:opacity-100
+
+          sm:group-focus-within:pointer-events-auto
+          sm:group-focus-within:opacity-100
         "
       >
         <button
@@ -168,8 +212,10 @@ const TaskItem = ({
             setIsEditing(true)
           }
           className="
-            cursor-pointer rounded-md
-            p-1.5 text-slate-400
+            cursor-pointer
+            rounded-md p-1.5
+            text-slate-400
+            transition
             hover:bg-white
             hover:text-slate-700
           "
@@ -184,8 +230,10 @@ const TaskItem = ({
             onDelete(task.id)
           }
           className="
-            cursor-pointer rounded-md
-            p-1.5 text-slate-400
+            cursor-pointer
+            rounded-md p-1.5
+            text-slate-400
+            transition
             hover:bg-red-50
             hover:text-red-500
           "

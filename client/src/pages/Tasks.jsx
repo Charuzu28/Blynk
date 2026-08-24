@@ -9,10 +9,15 @@ import useTasks from "../features/tasks/hooks/useTasks";
 
 import TasksWidget from "../features/tasks/components/TaskWidget";
 
+import WidgetState from "../components/shared/WidgetState";
+
 const Tasks = () => {
   const {
     tasks,
     selectedTaskId,
+
+    isLoading,
+    error,
 
     addTask,
     toggleTask,
@@ -21,10 +26,9 @@ const Tasks = () => {
     selectTask,
   } = useTasks();
 
-  const completedTasks =
-    tasks.filter(
-      (task) => task.completed
-    ).length;
+  const completedTasks = tasks.filter(
+    (task) => task.completed
+  ).length;
 
   return (
     <main
@@ -45,11 +49,7 @@ const Tasks = () => {
             justify-between
           "
         >
-          <div
-            className="
-              flex items-center gap-4
-            "
-          >
+          <div className="flex items-center gap-4">
             <Link
               to="/"
               aria-label="Back home"
@@ -86,50 +86,53 @@ const Tasks = () => {
                   text-slate-400
                 "
               >
-                Plan what you want
-                to focus on.
+                Plan what you want to focus on.
               </p>
             </div>
           </div>
 
-          <div
-            className="
-              hidden items-center
-              gap-2
-              rounded-xl
-              bg-blue-50
-              px-4 py-2
-              text-sm
-              text-blue-500
-              sm:flex
-            "
-          >
-            <FiCheckCircle />
+          {!isLoading && !error && (
+            <div
+              className="
+                hidden items-center
+                gap-2
+                rounded-xl
+                bg-blue-50
+                px-4 py-2
+                text-sm
+                text-blue-500
+                sm:flex
+              "
+            >
+              <FiCheckCircle />
 
-            {completedTasks} /{" "}
-            {tasks.length}
-          </div>
+              {completedTasks} / {tasks.length}
+            </div>
+          )}
         </header>
 
-        <TasksWidget
-          tasks={tasks}
-          selectedTaskId={
-            selectedTaskId
-          }
-          onAddTask={addTask}
-          onToggleTask={
-            toggleTask
-          }
-          onSelectTask={
-            selectTask
-          }
-          onEditTask={
-            updateTaskTitle
-          }
-          onDeleteTask={
-            deleteTask
-          }
-        />
+        {isLoading ? (
+          <WidgetState
+            title="Loading tasks"
+            message="Getting your focus tasks."
+          />
+        ) : error ? (
+          <WidgetState
+            type="error"
+            title="Couldn't load tasks"
+            message={error}
+          />
+        ) : (
+          <TasksWidget
+            tasks={tasks}
+            selectedTaskId={selectedTaskId}
+            onAddTask={addTask}
+            onToggleTask={toggleTask}
+            onSelectTask={selectTask}
+            onEditTask={updateTaskTitle}
+            onDeleteTask={deleteTask}
+          />
+        )}
       </div>
     </main>
   );
