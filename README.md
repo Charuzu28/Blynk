@@ -1,6 +1,6 @@
 # BLYNK
 
-BLYNK'N is a minimalist productivity and Pomodoro web application built with the MERN stack.
+BLYNK is a minimalist productivity and Pomodoro web application built with the MERN stack.
 
 It is designed to help users stay focused, manage tasks and notes, track focus sessions, and personalize their productivity experience.
 
@@ -105,7 +105,7 @@ It is designed to help users stay focused, manage tasks and notes, track focus s
 
 ## Architecture
 
-BLYNK'N uses a separated frontend, backend, and database architecture.
+blynk uses a separated frontend, backend, and database architecture.
 
 ```text
                     User Browser
@@ -265,7 +265,7 @@ Vercel then proxies that request to Render.
 
 ## Authentication
 
-BLYNK'N uses JWT authentication stored inside an HttpOnly cookie.
+blynk uses JWT authentication stored inside an HttpOnly cookie.
 
 The authentication cookie uses:
 
@@ -598,7 +598,7 @@ Expected response:
 ```json
 {
   "success": true,
-  "message": "BLYNK'N API is running"
+  "message": "blynk API is running"
 }
 ```
 
@@ -843,7 +843,7 @@ Used to save and retrieve completed focus sessions.
 
 ## Timer Personalization
 
-BLYNK'N allows users to customize the appearance of the Pomodoro timer ring.
+blynk allows users to customize the appearance of the Pomodoro timer ring.
 
 Available styles include:
 
@@ -887,7 +887,7 @@ Alarm preferences are stored in MongoDB and persist between sessions.
 
 ## Data Persistence
 
-BLYNK'N stores user data using MongoDB Atlas.
+blynk stores user data using MongoDB Atlas.
 
 Persistent data includes:
 
@@ -906,7 +906,7 @@ This means the data remains available even if the Render Docker container restar
 
 ## What I Learned
 
-Building BLYNK'N helped me gain practical experience beyond creating a frontend interface.
+Building blynk helped me gain practical experience beyond creating a frontend interface.
 
 Throughout the project, I worked on:
 
@@ -951,7 +951,7 @@ Error handling
 
 ## Future Improvements
 
-BLYNK'N v1.0 is currently complete, but possible future improvements include:
+blynk v1.0 is currently complete, but possible future improvements include:
 
 - Productivity analytics
 - More timer customization
@@ -969,7 +969,7 @@ BLYNK'N v1.0 is currently complete, but possible future improvements include:
 ## Version
 
 ```text
-BLYNK'N v1.0.0
+blynk v1.0.0
 ```
 
 ---
