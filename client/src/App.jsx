@@ -5,7 +5,7 @@ import {
 } from "react-router-dom";
 
 import AppLayout from "./components/layout/AppLayout";
-
+import TimerProvider from "./features/timer/context/TimerContext";
 import ProtectedRoute from "./features/auth/components/ProtectedRoute";
 
 import Home from "./pages/Home";
@@ -14,6 +14,7 @@ import Notes from "./pages/Notes";
 import Settings from "./pages/Settings";
 import Fallback from "./pages/Fallback";
 import Maintenance from "./pages/Maintenance";
+
 
 import Login from "./pages/Login";
 import Register from "./pages/Register";
@@ -27,6 +28,7 @@ function App() {
 
   return (
     <BrowserRouter>
+    <TimerProvider>
       <Routes>
         {/* Public routes */}
         <Route
@@ -66,9 +68,10 @@ function App() {
               path="*"
               element={<Fallback />}
             />
+           </Route>
           </Route>
-        </Route>
-      </Routes>
+        </Routes>
+      </TimerProvider>
     </BrowserRouter>
   );
 }
