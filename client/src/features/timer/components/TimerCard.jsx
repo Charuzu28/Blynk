@@ -3,7 +3,6 @@ import {
   useEffect,
   useRef,
   useState,
-  useMemo,
 } from "react";
 
 import { useSettings } from "../../settings/context/SettingContext";
@@ -19,12 +18,11 @@ import {
 import TimerRing from "./TimerRing";
 import ModeSelector from "./ModeSelector";
 
-import usePomodoroTimer from "../hooks/usePomodoro";
+import { useTimer } from "../context/TimerContext";
 import useEyeCareReminder from "../../eyecare/hooks/useEyeCareReminder";
 import EyeBreakModal from "../../eyecare/components/EyeBreakModal";
 
 import {
-  TIMER_DURATIONS,
   TIMER_LABELS,
   TIMER_MODES,
 } from "../timer.constants";
@@ -83,27 +81,6 @@ const TimerCard = ({
   // --------------------------------------------------
   const { settings } = useSettings();
 
-  // --------------------------------------------------
-  // Timer durations
-  // IMPORTANT: This must come before usePomodoroTimer
-  // --------------------------------------------------
-  const timerDurations = useMemo(
-    () => ({
-      [TIMER_MODES.POMODORO]:
-        settings.pomodoroMinutes * 60,
-
-      [TIMER_MODES.SHORT_BREAK]:
-        settings.shortBreakMinutes * 60,
-
-      [TIMER_MODES.LONG_BREAK]:
-        settings.longBreakMinutes * 60,
-    }),
-    [
-      settings.pomodoroMinutes,
-      settings.shortBreakMinutes,
-      settings.longBreakMinutes,
-    ]
-  );
 
   // --------------------------------------------------
   // Alarm setup
@@ -198,7 +175,7 @@ const TimerCard = ({
   // --------------------------------------------------
   // Pomodoro timer
   // --------------------------------------------------
-  const {
+    const {
     mode,
     timeLeft,
     duration,
@@ -206,10 +183,7 @@ const TimerCard = ({
     reset,
     changeMode,
     toggleTimer,
-  } = usePomodoroTimer({
-    onComplete: handleComplete,
-    durations: timerDurations,
-  });
+  } = useTimer();
 
   // --------------------------------------------------
   // Timer toggle
