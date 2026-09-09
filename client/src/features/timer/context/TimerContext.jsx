@@ -1,35 +1,55 @@
 import {
   createContext,
+  useCallback,
   useContext,
   useMemo,
+  useRef,
+  useState,
 } from "react";
 
-import { useSettings } from "../../settings/context/SettingContext";
-
 import usePomodoroTimer from "../hooks/usePomodoro";
-
-import {
-  TIMER_MODES,
-} from "../timer.constants";
+import { useSettings } from "../../settings/context/SettingContext";
+import { TIMER_MODES } from "../timer.constants";
 
 const TimerContext = createContext(null);
 
-export const TimerProvider = ({
-  children,
-  onComplete,
-}) => {
+const TimerProvider = ({ children }) => {
   const { settings } = useSettings();
+  const activeTaskRef = useRef(null);
+  const completionHandlerRef = useRef(null);
 
-  const timerDurations = useMemo(
+  const [activeTask, setActiveTaskState] =
+    useState(null);
+
+  const setActiveTask = useCallback((task) => {
+    const snapshot = task
+      ? {
+          id: task.id,
+          title: task.title,
+          completedPomodoros:
+            task.completedPomodoros,
+          estimatedPomodoros:
+            task.estimatedPomodoros,
+        }
+      : null;
+
+    activeTaskRef.current = snapshot;
+    setActiveTaskState(snapshot);
+  }, []);
+
+  const clearActiveTask = useCallback(() => {
+    activeTaskRef.current = null;
+    setActiveTaskState(null);
+  }, []);
+
+  const durations = useMemo(
     () => ({
       [TIMER_MODES.POMODORO]:
-        settings.pomodoroMinutes * 60,
-
+        Math.max(1, Number(settings.pomodoroMinutes) || 25) * 60,
       [TIMER_MODES.SHORT_BREAK]:
-        settings.shortBreakMinutes * 60,
-
+        Math.max(1, Number(settings.shortBreakMinutes) || 5) * 60,
       [TIMER_MODES.LONG_BREAK]:
-        settings.longBreakMinutes * 60,
+        Math.max(1, Number(settings.longBreakMinutes) || 10) * 60,
     }),
     [
       settings.pomodoroMinutes,
@@ -38,17 +58,43 @@ export const TimerProvider = ({
     ]
   );
 
+  const registerCompletionHandler = useCallback((handler) => {
+    completionHandlerRef.current = handler;
+
+    return () => {
+      if (completionHandlerRef.current === handler) {
+        completionHandlerRef.current = null;
+      }
+    };
+  }, []);
+
+  const handleTimerComplete = useCallback(
+    ({ mode, duration }) => {
+      completionHandlerRef.current?.({
+        mode,
+        duration,
+        task: activeTaskRef.current,
+      });
+
+      // window.alert("Timer finished!");
+    },
+    []
+  );
+
   const timer = usePomodoroTimer({
-    onComplete,
-    durations: timerDurations,
+    onComplete: handleTimerComplete,
+    durations,
   });
 
-  const value = useMemo(
-    () => ({
-      ...timer,
-    }),
-    [timer]
-  );
+  const value = {
+    ...timer,
+
+    // IMPORTANT
+    activeTask,
+    setActiveTask,
+    clearActiveTask,
+    registerCompletionHandler,
+  };
 
   return (
     <TimerContext.Provider value={value}>

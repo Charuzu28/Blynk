@@ -11,9 +11,14 @@ const AuthShell = ({
         <section className="hidden lg:block">
           <Link
             to="/"
-            className="text-3xl font-medium tracking-tight text-blue-500"
+            className="flex items-baseline gap-2 text-blue-500"
           >
-            blynk
+            <span className="text-3xl font-medium tracking-tight">
+              blynk
+            </span>
+            <span className="text-xs font-medium tracking-normal text-slate-400">
+              v 2.2
+            </span>
           </Link>
 
           <div className="mt-16 max-w-lg">
@@ -65,9 +70,14 @@ const AuthShell = ({
           <div className="mb-8 lg:hidden">
             <Link
               to="/"
-              className="text-3xl font-medium tracking-tight text-blue-500"
+              className="flex items-baseline gap-2 text-blue-500"
             >
-              blynk
+              <span className="text-3xl font-medium tracking-tight">
+                blynk
+              </span>
+              <span className="text-xs font-medium tracking-normal text-slate-400">
+                v 2.2
+              </span>
             </Link>
           </div>
 
