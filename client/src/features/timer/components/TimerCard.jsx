@@ -65,14 +65,12 @@ const TimerCard = ({
   selectedTask,
   onFocusComplete,
 }) => {
+  const alarmRef = useRef(null);
   const [modal, setModal] = useState({
     open: false,
     title: "",
     message: "",
   });
-
-  const alarmRef = useRef(null);
-  const activeTaskRef = useRef(null);
 
   // --------------------------------------------------
   // Settings
@@ -124,10 +122,24 @@ const TimerCard = ({
   // --------------------------------------------------
   // Timer completion
   // --------------------------------------------------
+  const {
+    mode,
+    timeLeft,
+    duration,
+    isRunning,
+    setActiveTask,
+    clearActiveTask,
+    registerCompletionHandler,
+    reset,
+    changeMode,
+    toggleTimer,
+  } = useTimer();
+
   const handleComplete = useCallback(
     ({
       mode: completedMode,
       duration: completedDuration,
+      task,
     }) => {
       const message =
         completionMessages[completedMode] ??
@@ -139,13 +151,13 @@ const TimerCard = ({
         TIMER_MODES.POMODORO
       ) {
         onFocusComplete?.({
-          task: activeTaskRef.current,
+          task,
           duration: completedDuration,
         });
       }
 
       // Clear active task
-      activeTaskRef.current = null;
+      clearActiveTask();
 
       // Play alarm if enabled
       if (
@@ -167,23 +179,16 @@ const TimerCard = ({
       });
     },
     [
+      clearActiveTask,
       onFocusComplete,
       settings.soundEnabled,
     ]
   );
 
-  // --------------------------------------------------
-  // Pomodoro timer
-  // --------------------------------------------------
-    const {
-    mode,
-    timeLeft,
-    duration,
-    isRunning,
-    reset,
-    changeMode,
-    toggleTimer,
-  } = useTimer();
+  useEffect(
+    () => registerCompletionHandler(handleComplete),
+    [registerCompletionHandler, handleComplete]
+  );
 
   // --------------------------------------------------
   // Timer toggle
@@ -194,8 +199,7 @@ const TimerCard = ({
       timeLeft === duration;
 
     if (isFreshSession) {
-      activeTaskRef.current =
-        selectedTask ?? null;
+      setActiveTask(selectedTask ?? null);
     }
 
     toggleTimer();
@@ -239,18 +243,18 @@ const TimerCard = ({
   // --------------------------------------------------
   // Reset timer
   // --------------------------------------------------
-  const handleReset = () => {
-    activeTaskRef.current = null;
+    const handleReset = () => {
+      clearActiveTask();
 
-    reset();
-    resetEyeReminder();
-  };
+      reset();
+      resetEyeReminder();
+    };
 
   // --------------------------------------------------
   // Change timer mode
   // --------------------------------------------------
   const handleModeChange = (nextMode) => {
-    activeTaskRef.current = null;
+    clearActiveTask();
 
     resetEyeReminder();
     changeMode(nextMode);
@@ -431,19 +435,18 @@ const TimerCard = ({
         </div>
       </section>
 
-      {/* Completion Alert */}
-      <AlertModal
-        open={modal.open}
-        title={modal.title}
-        message={modal.message}
-        onClose={closeModal}
-      />
-
       {/* Eye Break Modal */}
       <EyeBreakModal
         open={isEyeBreakOpen}
         onClose={closeEyeBreak}
         duration={settings.eyeBreakSeconds}
+      />
+
+      <AlertModal
+        open={modal.open}
+        onClose={closeModal}
+        title={modal.title}
+        message={modal.message}
       />
     </>
   );

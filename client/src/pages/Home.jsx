@@ -16,6 +16,7 @@ import FocusStreakCard
   from "../features/streak/components/FocusStreakCard";
 import WidgetState from "../components/shared/WidgetState";
 
+
 const Home = () => {
   const {
   tasks,
@@ -74,9 +75,14 @@ const handleFocusComplete = async ({
         <header className="mb-8 flex items-center justify-between">
           <Link
             to="/"
-            className="text-3xl font-regular tracking-tight text-blue-500"
+            className="flex items-baseline gap-2 text-blue-500"
           >
-            blynk
+            <span className="text-3xl font-regular tracking-tight">
+              blynk
+            </span>
+            <span className="text-xs font-medium tracking-normal text-slate-400">
+              v 2.2
+            </span>
           </Link>
 
           <Link
