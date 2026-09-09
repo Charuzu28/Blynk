@@ -40,6 +40,29 @@ export const loginUser = async ({
   return data.user;
 };
 
+export const requestPasswordReset = async (email) => {
+  return apiRequest(
+    "/api/auth/forgot-password",
+    {
+      method: "POST",
+      body: JSON.stringify({ email }),
+    }
+  );
+};
+
+export const resetPassword = async ({
+  token,
+  password,
+}) => {
+  return apiRequest(
+    "/api/auth/reset-password",
+    {
+      method: "POST",
+      body: JSON.stringify({ token, password }),
+    }
+  );
+};
+
 export const getCurrentUser = async () => {
   try {
     const data = await apiRequest(

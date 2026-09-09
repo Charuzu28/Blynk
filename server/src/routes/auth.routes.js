@@ -4,6 +4,8 @@ import {
   login,
   logout,
   getCurrentUser,
+  requestPasswordReset,
+  resetPassword,
 } from "../controllers/auth.controller.js";
 import { requireAuth } from "../middleware/auth.middleware.js";
 
@@ -23,6 +25,16 @@ router.post(
   "/login",
   authLimiter,
   login
+);
+router.post(
+  "/forgot-password",
+  authLimiter,
+  requestPasswordReset
+);
+router.post(
+  "/reset-password",
+  authLimiter,
+  resetPassword
 );
 router.post("/logout", logout);
 

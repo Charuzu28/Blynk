@@ -6,6 +6,7 @@ import {
 
 import AuthShell from "../features/auth/components/AuthShell";
 import { useAuth } from "../features/auth/context/AuthContext";
+import TermsModal from "../features/auth/components/TermsModal";
 
 const Register = () => {
   const navigate = useNavigate();
@@ -16,6 +17,10 @@ const Register = () => {
   const [email, setEmail] = useState("");
   const [password, setPassword] =
     useState("");
+  const [hasAcceptedTerms, setHasAcceptedTerms] =
+    useState(false);
+  const [isTermsOpen, setIsTermsOpen] =
+    useState(false);
 
   const [error, setError] = useState("");
   const [isSubmitting, setIsSubmitting] =
@@ -43,6 +48,11 @@ const Register = () => {
       setError(
         "Password must be at least 8 characters."
       );
+      return;
+    }
+
+    if (!hasAcceptedTerms) {
+      setError("You must accept the terms and conditions.");
       return;
     }
 
@@ -180,6 +190,27 @@ const Register = () => {
           </p>
         </div>
 
+        <label className="flex items-start gap-3 text-sm text-slate-500">
+          <input
+            type="checkbox"
+            checked={hasAcceptedTerms}
+            onChange={(event) =>
+              setHasAcceptedTerms(event.target.checked)
+            }
+            className="mt-1 h-4 w-4 rounded border-slate-300 text-blue-500 focus:ring-blue-400"
+          />
+          <span>
+            I agree to the{" "}
+            <button
+              type="button"
+              onClick={() => setIsTermsOpen(true)}
+              className="font-medium text-blue-500 hover:text-blue-600"
+            >
+              Terms and Conditions
+            </button>
+          </span>
+        </label>
+
         <button
           type="submit"
           disabled={isSubmitting}
@@ -199,6 +230,11 @@ const Register = () => {
             : "Create account"}
         </button>
       </form>
+
+      <TermsModal
+        open={isTermsOpen}
+        onClose={() => setIsTermsOpen(false)}
+      />
 
       <p className="mt-6 text-center text-sm text-slate-500">
         Already have an account?{" "}

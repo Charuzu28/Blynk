@@ -66,10 +66,27 @@ It is designed to help users stay focused, manage tasks and notes, track focus s
 - User registration
 - User login
 - User logout
+- Forgot-password email links
+- Password reset links expire after one hour
+- Terms and conditions acceptance during registration
 - JWT authentication
 - Secure HttpOnly cookies
 - Persistent login sessions
 - Protected routes
+
+Password reset emails require these server environment variables:
+
+```env
+CLIENT_URL=http://localhost:5173
+SMTP_HOST=smtp.example.com
+SMTP_PORT=587
+SMTP_SECURE=false
+SMTP_USER=your-smtp-username
+SMTP_PASSWORD=your-smtp-password
+SMTP_FROM=no-reply@example.com
+```
+
+Set `CLIENT_URL` to the deployed frontend URL in production. Keep the SMTP credentials in the server environment and do not commit them.
 
 ---
 
@@ -279,14 +296,14 @@ Path=/
 The frontend sends requests using:
 
 ```js
-credentials: "include"
+credentials: "include";
 ```
 
 Example:
 
 ```js
 fetch("/api/auth/me", {
-  credentials: "include"
+  credentials: "include",
 });
 ```
 
@@ -991,5 +1008,3 @@ https://blynks.vercel.app
 ## License
 
 This project was created as a personal portfolio and learning project.
-
-
